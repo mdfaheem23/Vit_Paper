@@ -1,0 +1,39 @@
+{
+  "name": "vit-question-papers",
+  "version": "1.0.0",
+  "description": "VIT QP Repository — TDD test suite",
+  "private": true,
+  "scripts": {
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "test:watch": "jest --watch"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
+    "collectCoverageFrom": [
+      "js/papers-logic.js",
+      "js/utils.js",
+      "js/filter-logic.js",
+      "js/validate-logic.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 80,
+        "functions": 80,
+        "lines": 80,
+        "statements": 80
+      }
+    },
+    "coverageReporters": [
+      "text",
+      "text-summary",
+      "lcov"
+    ]
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

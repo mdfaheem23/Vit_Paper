@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Submit a Paper — VIT Question Papers</title>
+  <meta name="description" content="Submit your VIT previous year question papers and help fellow students. Contribute exam papers for CAT1, CAT2, and FAT." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500&display=block" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500&display=block" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar" id="navbar" style="position:fixed;">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">VIT<span>QP</span></a>
+      <ul class="nav-links">
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Submit Hero -->
+  <section class="submit-hero">
+    <canvas id="heroCanvas"></canvas>
+    <div class="submit-hero-content">
+      <div class="section-tag">CONTRIBUTE</div>
+      <h1 class="submit-title">Submit Your <span class="gradient-text">Paper</span></h1>
+    </div>
+  </section>
+
+  <!-- Submit Form Section -->
+  <section class="submit-section">
+    <div class="submit-wrap">
+
+      <!-- Success State (hidden initially) -->
+      <div class="submit-success hidden" id="successState">
+        <div class="success-confetti" id="successConfetti"></div>
+        <div class="success-icon">✓</div>
+        <h2>Thank You For Your Contribution</h2>
+        <p class="success-sub">You're a legend.</p>
+        <p class="success-body">
+          Every paper you share lights the way for someone studying late at night, stressed and searching for answers. You're not just uploading a file — you're giving someone a fighting chance.
+        </p>
+        <div class="success-divider"></div>
+        <p class="success-tagline">Built by students, for students. You just made it better.</p>
+        <div style="display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;margin-top:1.75rem">
+          <a href="submit.html" class="btn btn-ghost">Submit Another</a>
+          <a href="index.html" class="btn btn-primary">Browse Papers</a>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <div class="submit-card" id="submitCard">
+        <div class="submit-card-header">
+          <h2 class="submit-card-title">Paper Details</h2>
+          <p class="submit-card-sub">Fields marked with * are required</p>
+        </div>
+
+        <form id="submitForm" novalidate>
+
+          <div class="form-group">
+            <label class="form-label" for="sCode">Course Code *</label>
+            <input type="text" class="form-input" id="sCode" name="course_code" placeholder="e.g. CSE2006" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="sSubject">Subject Name *</label>
+            <input type="text" class="form-input" id="sSubject" name="subject_name" placeholder="e.g. Microprocessors & Interfacing" required />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="sCourse">Course Type *</label>
+              <select class="form-input" id="sCourse" name="course_type" required>
+                <option value="">Select</option>
+                <option value="MIC">MIC</option>
+                <option value="MID">MID</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="sYear">Year *</label>
+              <select class="form-input" id="sYear" name="year" required>
+                <option value="">Select Year</option>
+                <option value="2026">2026</option>
+                <option value="2025">2025</option>
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+                <option value="2022">2022</option>
+                <option value="2021">2021</option>
+                <option value="2020">2020</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="sExam">Exam Type *</label>
+              <select class="form-input" id="sExam" name="exam_type" required>
+                <option value="">Select</option>
+                <option value="CAT1">CAT 1</option>
+                <option value="CAT2">CAT 2</option>
+                <option value="FAT">FAT</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="sSem">Semester</label>
+              <select class="form-input" id="sSem" name="semester">
+                <option value="WS">Winter Semester</option>
+                <option value="FS">Fall Semester</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="sSlot">Slot</label>
+            <input type="text" class="form-input" id="sSlot" name="slot" placeholder="e.g. A1, B2, G1" maxlength="2" pattern="[A-Ga-g][12]" title="Two characters: a letter A–G followed by 1 or 2 (e.g. A1, B2, G1)" />
+          </div>
+
+          <!-- Multi-Photo Upload Zone -->
+          <div class="form-group">
+            <label class="form-label">Upload Exam Paper * <span style="font-size:.7rem;color:var(--text-muted)">(JPG / PNG / PDF — up to 10 files)</span></label>
+            <div class="upload-zone" id="uploadZone">
+              <div class="upload-zone-icon">📄</div>
+              <div class="upload-zone-title">Drop exam paper here</div>
+              <div class="upload-zone-sub">or click to browse · JPG, PNG, PDF · up to 10 files</div>
+              <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp,application/pdf" multiple style="display:none" />
+            </div>
+
+            <!-- Per-image scan queue -->
+            <div class="scan-queue hidden" id="scanQueue"></div>
+
+            <!-- Overall scan result -->
+            <div class="scan-overall hidden" id="scanOverall"></div>
+          </div>
+
+          <div class="upload-or-divider">or share a Google Drive link</div>
+
+          <div class="form-group">
+            <label class="form-label" for="sUrl">Google Drive Link <span style="font-size:.65rem;color:var(--text-muted)">(optional if file attached)</span></label>
+            <input type="url" class="form-input" id="sUrl" name="drive_link" placeholder="https://drive.google.com/file/d/…" />
+            <span class="form-hint">Make sure the file is set to "Anyone with the link can view"</span>
+          </div>
+
+          <div class="form-error hidden" id="formError">Please fill in all required fields correctly.</div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="submitBtn">
+            <span class="btn-text">Submit Paper</span>
+            <span class="btn-spinner hidden" id="btnSpinner">Sending…</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Guidelines -->
+      <div class="submit-guidelines">
+        <h3>Submission Guidelines</h3>
+        <ul>
+          <li>Upload your paper to Google Drive and make it publicly viewable</li>
+          <li>Ensure the paper is clear and readable (scanned or digital)</li>
+          <li>Only share papers you have legitimate access to</li>
+          <li>Double-check the course code and exam type before submitting</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="nav-logo">VIT<span>QP</span></span>
+      </div>
+      <div class="footer-note">Papers are shared for educational purposes only.</div>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/validate-logic.js"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/three-scene.js"></script>
+  <script src="js/ocr-scan.js"></script>
+  <script src="js/submit.js"></script>
+</body>
+</html>

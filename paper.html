@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Paper — VIT Question Papers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500&display=block" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500&display=block" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    /* ── Paper detail page ── */
+    .paper-detail-hero {
+      min-height: 36vh;
+      display: flex;
+      align-items: flex-end;
+      padding: 7rem 0 3rem;
+      position: relative;
+      overflow: hidden;
+      background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(124,58,237,.18) 0%, transparent 70%);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .paper-detail-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%237c3aed' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+    .paper-detail-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      position: relative;
+      z-index: 1;
+      width: 100%;
+    }
+    .paper-detail-breadcrumb {
+      font-size: .75rem;
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+    .paper-detail-breadcrumb a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .paper-detail-breadcrumb a:hover { text-decoration: underline; }
+    .paper-detail-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.6rem, 4vw, 2.8rem);
+      font-weight: 800;
+      line-height: 1.15;
+      color: var(--text);
+      margin: 0 0 1.25rem;
+    }
+    .paper-detail-title .code-accent {
+      color: var(--accent);
+    }
+    .paper-detail-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin-bottom: 1.5rem;
+    }
+    .pchip {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      padding: .3rem .75rem;
+      border-radius: 999px;
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+    .pchip-exam-cat1  { background: rgba(99,102,241,.15); color: #a5b4fc; border: 1px solid rgba(99,102,241,.3); }
+    .pchip-exam-cat2  { background: rgba(20,184,166,.15); color: #5eead4; border: 1px solid rgba(20,184,166,.3); }
+    .pchip-exam-fat   { background: rgba(239,68,68,.12);  color: #fca5a5; border: 1px solid rgba(239,68,68,.25); }
+    .pchip-default    { background: rgba(255,255,255,.06); color: var(--text-muted); border: 1px solid rgba(255,255,255,.1); }
+    .pchip-course     { background: rgba(124,58,237,.15); color: #c4b5fd; border: 1px solid rgba(124,58,237,.3); }
+
+    /* ── Viewer section ── */
+    .paper-viewer-section {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem 4rem;
+    }
+    .paper-viewer-wrap {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      overflow: hidden;
+      min-height: 640px;
+      position: relative;
+    }
+    .paper-viewer-wrap iframe {
+      width: 100%;
+      height: 78vh;
+      min-height: 540px;
+      border: none;
+      display: block;
+    }
+    .paper-viewer-unavailable {
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      color: var(--text-muted);
+      padding: 3rem;
+      text-align: center;
+    }
+    .paper-viewer-unavailable .unavail-icon {
+      font-size: 3rem;
+      opacity: .4;
+    }
+    .paper-viewer-unavailable h3 {
+      font-size: 1.1rem;
+      color: var(--text);
+      font-weight: 600;
+    }
+    .paper-viewer-unavailable p {
+      font-size: .85rem;
+      max-width: 340px;
+      line-height: 1.6;
+    }
+
+    /* ── Action bar ── */
+    .paper-actions {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .paper-actions .btn { font-size: .85rem; padding: .5rem 1.25rem; }
+
+    /* ── Related papers ── */
+    .related-section {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 2rem 5rem;
+    }
+    .related-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 0 0 1.25rem;
+      color: var(--text);
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+    .related-card {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+      text-decoration: none;
+      color: var(--text);
+      transition: border-color .2s, background .2s, transform .2s;
+      display: block;
+    }
+    .related-card:hover {
+      border-color: rgba(124,58,237,.4);
+      background: rgba(124,58,237,.06);
+      transform: translateY(-2px);
+    }
+    .related-card-exam {
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: .35rem;
+    }
+    .related-card-name {
+      font-size: .85rem;
+      font-weight: 600;
+      line-height: 1.3;
+      margin-bottom: .25rem;
+    }
+    .related-card-meta {
+      font-size: .72rem;
+      color: var(--text-muted);
+    }
+    .related-card.no-url { opacity: .5; pointer-events: none; }
+
+    @media (max-width: 600px) {
+      .paper-detail-hero { padding: 6rem 0 2rem; }
+      .paper-viewer-section { padding: 1.5rem 1rem 3rem; }
+      .related-section { padding: 0 1rem 4rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">VIT<span>QP</span></a>
+      <ul class="nav-links">
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="paper-detail-hero" id="paperHero">
+    <div class="paper-detail-inner">
+      <div class="paper-detail-breadcrumb">
+        <a href="index.html">Home</a>
+        <span>›</span>
+        <a href="index.html#papers">Papers</a>
+        <span>›</span>
+        <span id="breadcrumbCourse">—</span>
+      </div>
+      <h1 class="paper-detail-title" id="paperTitle">Loading…</h1>
+      <div class="paper-detail-chips" id="paperChips"></div>
+    </div>
+  </section>
+
+  <!-- Actions + Viewer -->
+  <section class="paper-viewer-section">
+    <div class="paper-actions" id="paperActions"></div>
+    <div class="paper-viewer-wrap" id="paperViewerWrap">
+      <div class="paper-viewer-unavailable">
+        <div class="unavail-icon">📄</div>
+        <h3>Loading paper…</h3>
+      </div>
+    </div>
+  </section>
+
+  <!-- Related Papers -->
+  <section class="related-section" id="relatedSection" style="display:none">
+    <div class="related-title">Other papers from this course</div>
+    <div class="related-grid" id="relatedGrid"></div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="nav-logo">VIT<span>QP</span></span>
+      </div>
+      <div class="footer-note">Papers are shared for educational purposes only.</div>
+    </div>
+  </footer>
+
+  <script src="js/utils.js"></script>
+  <script src="js/papers-logic.js"></script>
+  <script src="js/papers.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="js/paper-detail.js"></script>
+</body>
+</html>

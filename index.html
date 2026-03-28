@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VIT Question Papers — Browse & Download Previous Year Papers</title>
+  <meta name="description"
+    content="Browse and download VIT previous year question papers. CAT1, CAT2, and FAT exams across multiple semesters." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500&display=block" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500&display=block"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body>
+
+  <!-- Preloader -->
+  <div class="preloader" id="preloader">
+    <div class="preloader-inner">
+      <div class="preloader-logo">VIT<span>QP</span></div>
+      <div class="preloader-bar">
+        <div class="preloader-fill" id="preloaderFill"></div>
+      </div>
+      <div class="preloader-count" id="preloaderPct">0</div>
+    </div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">VIT<span>QP</span></a>
+      <ul class="nav-links">
+      </ul>
+      <button class="btn btn-sm btn-primary" id="signInBtn">Sign In</button>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero" id="hero">
+    <canvas id="hero-canvas"></canvas>
+    <div class="hero-overlay">
+      <div class="hero-content">
+<h1 class="hero-title">
+          <span class="word">Ace</span>
+          <span class="word">Your</span>
+          <span class="word gradient-text">Exams</span>
+        </h1>
+        <p class="hero-sub">
+          A student-built repository of previous year question papers —<br />CAT1, CAT2, FAT across multiple years.
+        </p>
+        <div class="hero-ctas" class="hero-btns">
+          <a href="#papers" class="btn btn-primary btn-lg">Browse Papers</a>
+          <a href="submit.html" class="btn btn-ghost btn-lg">Contribute</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Bar -->
+  <section class="stats-bar" id="stats">
+    <div class="stats-inner">
+      <div class="stat-item">
+        <span class="stat-num" data-target="30" id="statPapers">0</span>
+        <span class="stat-label">Question Papers</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num" data-target="2" id="statSubjects">0</span>
+        <span class="stat-label">Courses</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num" data-target="3" id="statYears">0</span>
+        <span class="stat-label">Years Covered</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num">100<span style="font-size:1rem">%</span></span>
+        <span class="stat-label">Free Forever</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Paper Browser -->
+  <section class="papers-section" id="papers">
+    <div class="section-header">
+      <div class="section-tag">REPOSITORY</div>
+      <h2 class="section-title">Question Papers</h2>
+      <p class="section-sub">Filter by course, year, and exam type to find what you need.</p>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar" id="filterBar">
+      <div class="filter-group">
+        <span class="filter-label">Course</span>
+        <div class="filter-pills" id="courseFilters">
+          <button class="filter-btn pill active" data-filter="course" data-value="all">All Courses</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Year</span>
+        <select class="filter-select" id="yearFilter">
+          <option value="all">All Years</option>
+          <option value="2025">2025</option>
+          <option value="2024">2024</option>
+          <option value="2023">2023</option>
+          <option value="2022">2022</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Exam</span>
+        <div class="filter-pills" id="examFilters">
+          <button class="filter-btn pill active" data-filter="exam" data-value="all">All</button>
+          <button class="filter-btn pill" data-filter="exam" data-value="CAT1">CAT 1</button>
+          <button class="filter-btn pill" data-filter="exam" data-value="CAT2">CAT 2</button>
+          <button class="filter-btn pill" data-filter="exam" data-value="FAT">FAT</button>
+        </div>
+      </div>
+      <div class="filter-group filter-search">
+        <input type="text" class="filter-input" id="searchInput" placeholder="Search subjects…" />
+      </div>
+    </div>
+
+    <!-- Results count -->
+    <div class="results-meta" id="resultsMeta">
+      <span id="resultsCount"></span>
+    </div>
+
+    <!-- Cards Grid -->
+    <div class="papers-grid" id="papersGrid">
+      <!-- Cards injected by main.js -->
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty-state hidden" id="papersEmpty">
+      <div class="empty-icon">📭</div>
+      <h3>No papers found</h3>
+      <p>Try adjusting your filters or <a href="submit.html">contribute one!</a></p>
+    </div>
+  </section>
+
+  <!-- CTA Strip -->
+  <section class="cta-strip">
+    <div class="cta-inner">
+      <div class="cta-text">
+        <h2>Have a question paper?</h2>
+        <p>Help your juniors by sharing what you have. Every upload makes a difference.</p>
+      </div>
+      <a href="submit.html" class="btn btn-primary btn-lg">Submit Your Paper →</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="nav-logo">VIT<span>QP</span></span>
+      </div>
+      <div class="footer-note">
+        Papers are shared for educational purposes only. All rights belong to VIT Chennai.
+      </div>
+    </div>
+  </footer>
+
+  <!-- Sign In Modal -->
+  <div class="modal-overlay hidden" id="signInModal">
+    <div class="modal-glass signin-modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Sign In</h2>
+        <button class="modal-close" id="signInClose">✕</button>
+      </div>
+      <p class="signin-sub">Use your Gmail to access the platform</p>
+      <form class="signin-form" id="signInForm">
+        <div class="form-group">
+          <label class="form-label">Gmail Address</label>
+          <input type="email" class="form-input" id="siEmail" placeholder="you@gmail.com" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-input" id="siPassword" placeholder="Password" />
+          <span class="form-hint">Leave blank for regular access · Admin password required for admin access</span>
+        </div>
+
+        <p class="signin-error hidden" id="siError">Incorrect admin password.</p>
+        <button type="submit" class="btn btn-primary btn-block">Continue</button>
+      </form>
+      <p class="signin-footer">By signing in you agree to use this for educational purposes only.</p>
+    </div>
+  </div>
+
+  <!-- Admin FAB + Dropdown Container -->
+  <div class="admin-fab-wrap hidden" id="adminFabWrap">
+    <!-- FAB Dropdown Menu (opens above the button) -->
+    <div class="fab-dropdown hidden" id="fabDropdown">
+      <button class="fab-dropdown-item" id="fabAddBtn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Paper
+      </button>
+      <button class="fab-dropdown-item" id="fabPendingBtn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Pending Review
+        <span class="admin-pending-badge hidden" id="adminPendingBadge">0</span>
+      </button>
+      <div style="height:1px;background:rgba(255,255,255,.08);margin:.25rem 0;"></div>
+      <button class="fab-dropdown-item" id="fabLogoutBtn" style="color:#f87171;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </button>
+    </div>
+    <!-- Always-visible Review FAB -->
+    <button class="admin-fab" id="pendingFab" title="Pending Submissions" style="background:rgba(234,179,8,.15);border:1px solid rgba(234,179,8,.3);color:#fbbf24;box-shadow:0 4px 16px rgba(234,179,8,.2);">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Review
+      <span id="pendingFabCount" style="background:#fbbf24;color:#1a1000;border-radius:999px;font-size:.65rem;font-weight:700;padding:.1rem .4rem;margin-left:.2rem;display:none">0</span>
+    </button>
+    <!-- Toggle Button -->
+    <button class="admin-fab" id="adminFab" title="Admin Menu">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Admin
+    </button>
+  </div>
+
+  <!-- Admin Dropdown (navbar) -->
+  <div class="admin-dropdown hidden" id="adminDropdown">
+    <button class="admin-dropdown-item" id="adminAddPaperBtn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Paper
+    </button>
+    <button class="admin-dropdown-item" id="adminPendingBtn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Review
+      <span class="admin-pending-badge hidden" id="adminNavBadge">0</span>
+    </button>
+    <div style="height:1px;background:rgba(255,255,255,.08);margin:.25rem 0"></div>
+    <button class="admin-dropdown-item" id="adminSignOutBtn" style="color:#f87171;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </button>
+  </div>
+
+  <!-- Add Paper Modal (Scan-based) -->
+  <div class="modal-overlay hidden" id="addModal">
+    <div class="modal-glass">
+      <div class="modal-header">
+        <h2 class="modal-title">Scan &amp; Add Paper</h2>
+        <button class="modal-close" id="addModalClose" aria-label="Close">✕</button>
+      </div>
+      <div id="scanStep">
+        <div class="scan-upload-zone" id="adminUploadZone">
+          <div class="scan-upload-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <div class="scan-upload-label">Drop the question paper here</div>
+          <div class="scan-upload-sub">or click to browse — JPG, PNG, WebP, PDF</div>
+          <input type="file" id="adminFileInput" accept="image/jpeg,image/png,image/webp,application/pdf" style="display:none" />
+        </div>
+        <div class="scan-status hidden" id="adminScanStatus">
+          <span class="scan-spinner"></span>
+          <span id="adminScanMsg">Scanning…</span>
+        </div>
+      </div>
+      <form id="addPaperForm" class="modal-form hidden">
+        <div class="detected-preview" id="detectedPreview"></div>
+        <div class="form-section-label">Detected — edit if wrong</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Subject</label>
+            <input type="text" class="form-input" id="fSubject" placeholder="Course name" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Course Code</label>
+            <input type="text" class="form-input" id="fCode" placeholder="e.g. CSE2006" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Exam</label>
+            <select class="form-input" id="fExam">
+              <option value="">— unknown —</option>
+              <option value="CAT1">CAT 1</option>
+              <option value="CAT2">CAT 2</option>
+              <option value="FAT">FAT</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Year</label>
+            <input type="number" class="form-input" id="fYear" placeholder="2025" min="2018" max="2030" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Course Type</label>
+            <input type="text" class="form-input" id="fCourse" placeholder="e.g. MIC, MID, CSI…" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Semester</label>
+            <select class="form-input" id="fSem">
+              <option value="WS">Winter</option>
+              <option value="FS">Fall</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-divider"></div>
+        <div class="form-group">
+          <label class="form-label">Google Drive / PDF URL *</label>
+          <input type="url" class="form-input" id="fUrl" placeholder="https://drive.google.com/…" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes (optional)</label>
+          <input type="text" class="form-input" id="fNotes" placeholder="Any extra info…" />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="scanBackBtn">← Re-scan</button>
+          <button type="button" class="btn btn-ghost" id="addModalCancelBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Paper</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Paper Modal -->
+  <div class="modal-overlay hidden" id="editModal">
+    <div class="modal-glass">
+      <div class="modal-header">
+        <h2 class="modal-title">Edit Paper</h2>
+        <button class="modal-close" id="editModalClose" aria-label="Close">✕</button>
+      </div>
+      <form id="editPaperForm" class="modal-form">
+        <input type="hidden" id="ePaperId" />
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Subject</label>
+            <input type="text" class="form-input" id="eSubject" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Course Code</label>
+            <input type="text" class="form-input" id="eCode" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Exam</label>
+            <select class="form-input" id="eExam">
+              <option value="CAT1">CAT 1</option>
+              <option value="CAT2">CAT 2</option>
+              <option value="FAT">FAT</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Year</label>
+            <input type="number" class="form-input" id="eYear" min="2018" max="2030" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Google Drive / PDF URL</label>
+          <input type="url" class="form-input" id="eUrl" placeholder="https://drive.google.com/…" />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="editCancelBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Pending Review Modal -->
+  <div class="modal-overlay hidden" id="pendingModal">
+    <div class="modal-glass" style="max-width:780px;width:95vw;max-height:85vh;overflow-y:auto;">
+      <div class="modal-header">
+        <h2 class="modal-title">Pending Submissions</h2>
+        <button class="modal-close" id="pendingModalClose" aria-label="Close">✕</button>
+      </div>
+      <div id="pendingList" style="padding:1rem 0;">
+        <p style="color:var(--text-muted);text-align:center;padding:2rem 0">No pending submissions.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Inline photo lightbox (shared) -->
+  <div id="photoLightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:99999;align-items:center;justify-content:center;cursor:zoom-out;" onclick="this.style.display='none'">
+    <img id="photoLightboxImg" src="" style="max-width:92vw;max-height:92vh;border-radius:8px;object-fit:contain;pointer-events:none;" />
+    <button onclick="event.stopPropagation();document.getElementById('photoLightbox').style.display='none'" style="position:absolute;top:1.25rem;right:1.25rem;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:50%;width:2.2rem;height:2.2rem;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/admin-config.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/papers-logic.js"></script>
+  <script src="js/filter-logic.js"></script>
+  <script src="js/papers.js"></script>
+  <script src="js/three-scene.js"></script>
+  <script src="js/ocr-scan.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/signin.js"></script>
+</body>
+
+</html>
