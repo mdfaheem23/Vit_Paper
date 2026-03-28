@@ -140,6 +140,7 @@
       var hasUrl   = p.url && p.url !== '#';
       var examCls  = 'exam-' + (/^(cat1|cat2|fat)$/i.test(p.exam || '') ? p.exam.toLowerCase() : 'default');
       var batchTag = p.batch ? '<span class="card-tag">' + p.batch + '</span>' : '';
+      var slotTag  = p.slot  ? '<span class="card-tag">Slot ' + escHtml(p.slot) + '</span>' : '';
 
       var downloadBtn = hasUrl
         ? '<a href="' + escHtml(p.url) + '" target="_blank" rel="noopener noreferrer" class="btn btn-sm ' + (isMic ? 'btn-primary' : 'btn-accent') + '" onclick="event.stopPropagation()">↓ PDF</a>'
@@ -160,6 +161,7 @@
         '<div class="card-tags">',
           '<span class="card-tag ' + examCls + '">' + escHtml(p.exam) + '</span>',
           '<span class="card-tag">' + escHtml(p.semester || '') + '</span>',
+          slotTag,
           batchTag,
         '</div>',
         '<div class="card-footer">',
