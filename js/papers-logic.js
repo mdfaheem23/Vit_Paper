@@ -58,11 +58,21 @@ function createPapersStore(storage) {
 
   function updatePaper(id, data) {
     const extra = getExtra();
-    const idx = extra.findIndex(p => p.id === id);
-    if (idx === -1) return false;
-    extra[idx] = { ...extra[idx], ...data };
-    saveExtra(extra);
-    return true;
+    const idx = extra.findIndex(p => String(p.id) === String(id));
+    if (idx !== -1) {
+      extra[idx] = { ...extra[idx], ...data };
+      saveExtra(extra);
+      return true;
+    }
+    // Fall back to approved cache (Supabase papers with UUID ids)
+    const approved = getApprovedCache();
+    const aidx = approved.findIndex(p => String(p.id) === String(id));
+    if (aidx !== -1) {
+      approved[aidx] = { ...approved[aidx], ...data };
+      saveApprovedCache(approved);
+      return true;
+    }
+    return false;
   }
 
   function deletePaper(id) {

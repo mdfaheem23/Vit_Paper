@@ -789,7 +789,7 @@
     var papers = window.Papers ? window.Papers.getPapers() : [];
     var paper  = papers.find(function (p) { return String(p.id) === rawId; });
     if (paper) {
-      window.Papers && window.Papers.updatePaper(paper.id, {
+      var updates = {
         subject : getVal('eSubject') || undefined,
         code    : getVal('eCode').toUpperCase() || undefined,
         course  : getVal('eCourse') || undefined,
@@ -797,7 +797,14 @@
         exam    : getVal('eExam') || undefined,
         url     : getVal('eUrl') || '#',
         source  : 'admin'
-      });
+      };
+      window.Papers && window.Papers.updatePaper(paper.id, updates);
+      /* Also PATCH Supabase so all users see the change */
+      if (window.DB && window.DB.configured()) {
+        window.DB.patchApprovedPaper(paper.id, updates).catch(function (err) {
+          console.warn('Supabase PATCH failed:', err);
+        });
+      }
     }
     closeEditModal();
     window.renderPapers && window.renderPapers();

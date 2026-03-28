@@ -288,6 +288,7 @@
     if (!addModal) return;
     addModal.querySelector('.modal-glass').classList.remove('modal-open');
     setTimeout(function () { addModal.classList.add('hidden'); document.body.style.overflow = ''; }, 250);
+    var dw = document.getElementById('adminDupeWarn'); if (dw) dw.style.display = 'none';
   }
 
   function resetScanStep() {
@@ -370,6 +371,41 @@
     updateStats();
   });
 
+  /* ── Duplicate detection for Add Paper form ── */
+  var _DUPE_FIELDS = ['fCode', 'fExam', 'fYear', 'fSem'];
+  _DUPE_FIELDS.forEach(function (id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('change', checkAdminDupe);
+    if (el.tagName === 'INPUT') el.addEventListener('input', checkAdminDupe);
+  });
+
+  function checkAdminDupe() {
+    var warn  = document.getElementById('adminDupeWarn');
+    if (!warn) return;
+    var code  = getVal('fCode').toUpperCase();
+    var exam  = getVal('fExam');
+    var year  = getVal('fYear');
+    var sem   = getVal('fSem');
+    if (!code || !exam || !year) { warn.style.display = 'none'; return; }
+    var papers = window.Papers ? window.Papers.getPapers() : [];
+    var match  = papers.find(function (p) {
+      return (p.code || '').toUpperCase() === code &&
+             (p.exam || '')               === exam &&
+             String(p.year || '')         === String(year) &&
+             (!sem || !p.semester || p.semester === sem);
+    });
+    if (match) {
+      var semLabel = sem === 'WS' ? 'Winter' : 'Fall';
+      warn.innerHTML =
+        '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:.05rem"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+        '<span> <strong>' + escHtml(match.code) + ' ' + escHtml(match.exam) + '</strong> (' + escHtml(String(match.year)) + ', ' + escHtml(semLabel) + ') already exists in the database.</span>';
+      warn.style.display = 'flex';
+    } else {
+      warn.style.display = 'none';
+    }
+  }
+
   /* ── Edit Modal functions ── */
   if (editModalClose) editModalClose.addEventListener('click', closeEditModal);
   if (editCancelBtn)  editCancelBtn.addEventListener('click',  closeEditModal);
@@ -404,7 +440,7 @@
     var papers = window.Papers ? window.Papers.getPapers() : [];
     var paper  = papers.find(function (p) { return String(p.id) === rawId; });
     if (paper) {
-      window.Papers && window.Papers.updatePaper(paper.id, {
+      var updates = {
         subject : getVal('eSubject') || undefined,
         code    : getVal('eCode').toUpperCase() || undefined,
         course  : getVal('eCourse') || undefined,
@@ -412,7 +448,14 @@
         exam    : getVal('eExam') || undefined,
         url     : getVal('eUrl') || '#',
         source  : 'admin'
-      });
+      };
+      window.Papers && window.Papers.updatePaper(paper.id, updates);
+      /* Also PATCH Supabase so all users see the change */
+      if (window.DB && window.DB.configured()) {
+        window.DB.patchApprovedPaper(paper.id, updates).catch(function (e) {
+          console.warn('Supabase PATCH failed:', e);
+        });
+      }
     }
     closeEditModal();
     renderTable();
@@ -550,11 +593,28 @@
       var displaySem   = sub.semester || ocrDet.semester   || '';
       var displaySlot  = sub.slot    || ocrDet.slot        || '';
 
+      /* ── Duplicate detection ── */
+      var allPapers = window.Papers ? window.Papers.getPapers() : [];
+      var dupeMatch = displayCode && displayExam && displayYear
+        ? allPapers.find(function (p) {
+            return (p.code || '').toUpperCase() === displayCode.toUpperCase() &&
+                   (p.exam || '')               === displayExam &&
+                   String(p.year || '')         === String(displayYear) &&
+                   (!displaySem || !p.semester || p.semester === displaySem);
+          })
+        : null;
+      var dupeBadge = dupeMatch
+        ? '<span style="display:inline-flex;align-items:center;gap:.25rem;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.4);color:#fbbf24;font-size:.65rem;font-weight:600;padding:.15rem .45rem;border-radius:4px;margin-left:.4rem;vertical-align:middle;letter-spacing:.04em">' +
+            '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+            ' DUPLICATE</span>'
+        : '';
+
       card.innerHTML =
         '<div class="pending-card-header">' +
           '<div class="pending-card-meta">' +
             '<div class="pending-card-title">' + escHtml(displayTitle) +
               (displayCode ? ' <span class="mono" style="font-size:.8rem;opacity:.7">' + escHtml(displayCode) + '</span>' : '') +
+              dupeBadge +
             '</div>' +
             '<div class="pending-card-sub">' +
               [displayExam, displayYear, sub.course || (displayCode.startsWith('CSE') ? 'MIC' : displayCode.startsWith('CSI') ? 'MID' : ''), displaySem, displaySlot ? 'Slot ' + displaySlot : '']

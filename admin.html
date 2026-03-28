@@ -245,6 +245,9 @@
           </div>
         </div>
 
+        <!-- Duplicate warning -->
+        <div id="adminDupeWarn" style="display:none;align-items:flex-start;gap:.5rem;padding:.65rem .85rem;border-radius:8px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.35);color:#fbbf24;font-size:.8rem;line-height:1.45;margin-bottom:.25rem"></div>
+
         <div class="form-divider"></div>
 
         <div class="form-group">
@@ -272,16 +275,16 @@
         <h2 class="modal-title">Edit Paper</h2>
         <button class="modal-close" id="editModalClose" aria-label="Close">✕</button>
       </div>
-      <form id="editPaperForm" class="modal-form">
+      <form id="editPaperForm" class="modal-form" novalidate>
         <input type="hidden" id="ePaperId" />
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Subject</label>
-            <input type="text" class="form-input" id="eSubject" required />
+            <input type="text" class="form-input" id="eSubject" />
           </div>
           <div class="form-group">
             <label class="form-label">Course Code</label>
-            <input type="text" class="form-input" id="eCode" required />
+            <input type="text" class="form-input" id="eCode" />
           </div>
         </div>
         <div class="form-row">

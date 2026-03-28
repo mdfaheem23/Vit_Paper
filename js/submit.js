@@ -16,7 +16,58 @@
   var submitForm   = document.getElementById('submitForm');
 
   /* ─── State ──────────────────────────────── */
-  var selectedFiles = [];
+  var selectedFiles  = [];
+  var _approvedPapers = [];
+
+  /* ─── Load approved papers for duplicate detection ── */
+  if (window.DB) {
+    window.DB.loadApprovedPapers().then(function (papers) {
+      _approvedPapers = papers || [];
+    }).catch(function () {
+      /* fallback: try localStorage cache */
+      try { _approvedPapers = JSON.parse(localStorage.getItem('vit_approved_cache') || '[]'); } catch (e) {}
+    });
+  } else {
+    try { _approvedPapers = JSON.parse(localStorage.getItem('vit_approved_cache') || '[]'); } catch (e) {}
+  }
+
+  /* ─── Duplicate detection ────────────────── */
+  var DUPE_IDS = ['sCode', 'sExam', 'sYear', 'sSem'];
+
+  function checkDuplicate() {
+    var code = val('sCode').toUpperCase();
+    var exam = val('sExam');
+    var year = val('sYear');
+    var sem  = val('sSem');
+
+    var dupeWarn = document.getElementById('duplicateWarn');
+    if (!dupeWarn) return;
+
+    if (!code || !exam || !year) { dupeWarn.style.display = 'none'; return; }
+
+    var match = _approvedPapers.find(function (p) {
+      return (p.code || '').toUpperCase() === code &&
+             (p.exam || '')               === exam &&
+             String(p.year || '')         === String(year) &&
+             (!sem || !p.semester || p.semester === sem);
+    });
+
+    if (match) {
+      var semLabel = sem === 'WS' ? 'Winter Semester' : 'Fall Semester';
+      dupeWarn.innerHTML =
+        '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:.05rem"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+        '<span> A <strong>' + escHtml(match.exam) + '</strong> paper for <strong>' + escHtml(match.code) + '</strong> (' + escHtml(String(match.year)) + ', ' + escHtml(semLabel) + ') already exists. You can still submit if yours is a different version.</span>';
+      dupeWarn.style.display = 'flex';
+    } else {
+      dupeWarn.style.display = 'none';
+    }
+  }
+
+  DUPE_IDS.forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('change', checkDuplicate);
+    if (el && el.tagName === 'INPUT') el.addEventListener('input', checkDuplicate);
+  });
 
   /* ─── Required fields check ─────────────── */
   var REQUIRED_IDS = ['sCode', 'sSubject', 'sCourse', 'sYear', 'sExam'];

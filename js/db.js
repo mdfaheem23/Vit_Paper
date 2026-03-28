@@ -197,6 +197,22 @@
     return newId;
   }
 
+  /* Patch fields on an approved paper in Supabase */
+  async function patchApprovedPaper(id, data) {
+    if (!configured()) return;
+    var body = {};
+    if (data.subject  !== undefined) body.subject  = data.subject;
+    if (data.code     !== undefined) body.code      = data.code;
+    if (data.course   !== undefined) body.course    = data.course;
+    if (data.year     !== undefined) body.year      = data.year;
+    if (data.exam     !== undefined) body.exam      = data.exam;
+    if (data.url      !== undefined) body.url       = data.url;
+    if (data.slot     !== undefined) body.slot      = data.slot;
+    if (data.semester !== undefined) body.semester  = data.semester;
+    if (!Object.keys(body).length) return;
+    await sbPatch('/rest/v1/' + TABLE + '?id=eq.' + encodeURIComponent(id), body);
+  }
+
   /* Delete an approved paper from Supabase */
   async function deleteApprovedPaper(id) {
     if (!configured()) return;
@@ -261,6 +277,7 @@
     approvePending      : approvePending,
     approveSubmission   : approveSubmission,
     rejectPending       : rejectPending,
+    patchApprovedPaper  : patchApprovedPaper,
     deleteApprovedPaper : deleteApprovedPaper,
     loadApprovedPapers  : loadApprovedPapers,
     /* expose localStorage helpers for callers that still maintain LS in parallel */
