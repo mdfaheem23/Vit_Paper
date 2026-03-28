@@ -71,7 +71,7 @@ img { display: block; max-width: 100%; }
 }
 .preloader-content { text-align: center; }
 .preloader-logo {
-  font-size: clamp(4rem, 12vw, 8rem);
+  font-size: clamp(2.5rem, 8vw, 8rem);
   font-weight: 800;
   letter-spacing: -.04em;
   background: linear-gradient(135deg, var(--primary), var(--accent));
@@ -80,6 +80,8 @@ img { display: block; max-width: 100%; }
   background-clip: text;
   line-height: 1;
   margin-bottom: 2rem;
+  max-width: 90vw;
+  white-space: nowrap;
 }
 .preloader-sub {
   font-family: var(--font-mono);
@@ -1016,6 +1018,7 @@ footer p {
 .preloader {
   position: fixed; inset: 0; background: var(--bg);
   z-index: 9000; display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
 }
 .preloader-inner { text-align: center; }
 .preloader-count { font-family: var(--font-mono); font-size: .75rem; color: var(--text-muted); }
