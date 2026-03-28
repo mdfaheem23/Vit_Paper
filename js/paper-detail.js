@@ -26,6 +26,10 @@
     return url;
   }
 
+  /* ── Admin check ── */
+  var _session = (function () { try { return JSON.parse(localStorage.getItem('vit_session') || 'null'); } catch(e) { return null; } })();
+  var isAdmin  = _session && _session.role === 'admin';
+
   /* ── Load paper ── */
   var id = parseInt(getParam('id'), 10);
   if (!id) {
@@ -106,20 +110,28 @@
       window._pdZipName = zipName;
 
       /* Show submitted photo thumbnails with lightbox + download */
-      var imgHtml = paper.images.map(function (src, i) {
-        return '<div style="text-align:center">' +
-          '<img src="' + escH(src) + '" ' +
-          'style="max-width:100%;border-radius:8px;border:1px solid rgba(255,255,255,.1);cursor:zoom-in;display:block;margin:0 auto" ' +
-          'onclick="(function(s){var lb=document.getElementById(\'pdLightbox\');var li=document.getElementById(\'pdLightboxImg\');if(lb&&li){li.src=s;lb.style.display=\'flex\';}})(this.src)" ' +
-          'alt="Page ' + (i + 1) + '" />' +
-          '<div style="display:flex;align-items:center;justify-content:center;gap:.5rem;margin-top:.5rem">' +
-            '<span style="font-size:.7rem;color:var(--text-muted)">Page ' + (i + 1) + '</span>' +
-            '<a href="' + escH(src) + '" download="page-' + (i + 1) + '.jpg" ' +
-            'style="font-size:.7rem;color:var(--accent);text-decoration:none;padding:.2rem .5rem;border:1px solid rgba(124,58,237,.3);border-radius:4px" ' +
-            'onclick="event.stopPropagation()">↓ Save</a>' +
-          '</div>' +
-        '</div>';
-      }).join('');
+      window._buildImagesHtml = function buildImagesHtml(images) {
+        return images.map(function (src, i) {
+          return '<div style="text-align:center">' +
+            '<img src="' + escH(src) + '" ' +
+            'style="max-width:100%;border-radius:8px;border:1px solid rgba(255,255,255,.1);cursor:zoom-in;display:block;margin:0 auto" ' +
+            'onclick="(function(s){var lb=document.getElementById(\'pdLightbox\');var li=document.getElementById(\'pdLightboxImg\');if(lb&&li){li.src=s;lb.style.display=\'flex\';}})(this.src)" ' +
+            'alt="Page ' + (i + 1) + '" />' +
+            '<div style="display:flex;align-items:center;justify-content:center;gap:.5rem;margin-top:.5rem">' +
+              '<span style="font-size:.7rem;color:var(--text-muted)">Page ' + (i + 1) + '</span>' +
+              '<a href="' + escH(src) + '" download="page-' + (i + 1) + '.jpg" ' +
+              'style="font-size:.7rem;color:var(--accent);text-decoration:none;padding:.2rem .5rem;border:1px solid rgba(124,58,237,.3);border-radius:4px" ' +
+              'onclick="event.stopPropagation()">↓ Save</a>' +
+              (isAdmin
+                ? '<button onclick="pdRemoveImage(' + i + ')" ' +
+                  'style="font-size:.7rem;color:#f87171;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:4px;padding:.2rem .5rem;cursor:pointer;">✕ Remove</button>'
+                : '') +
+            '</div>' +
+          '</div>';
+        }).join('');
+      }
+
+      var imgHtml = window._buildImagesHtml(paper.images);
 
       viewerWrap.innerHTML =
         '<div style="padding:1.5rem 2rem;display:flex;flex-direction:column;gap:1.5rem">' +
@@ -149,6 +161,25 @@
         '</div>';
     }
   }
+
+  /* ── Remove image (admin only) ── */
+  window.pdRemoveImage = function (idx) {
+    if (!isAdmin) return;
+    if (!confirm('Remove this image?')) return;
+    paper.images.splice(idx, 1);
+    window.Papers && window.Papers.updatePaper(paper.id, { images: paper.images.slice() });
+    window._pdImages = paper.images.slice();
+    var wrap = document.getElementById('paperViewerWrap');
+    if (wrap) {
+      var grid = wrap.querySelector('div[style*="flex-direction:column"]');
+      if (grid) {
+        /* Re-render just the images inside the grid */
+        var items = grid.querySelectorAll('div[style*="text-align:center"]');
+        items.forEach(function (el) { el.remove(); });
+        grid.insertAdjacentHTML('beforeend', window._buildImagesHtml(paper.images));
+      }
+    }
+  };
 
   /* ── Related papers (same course, exclude current) ── */
   var related = papers.filter(function (p) {
