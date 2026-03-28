@@ -710,7 +710,6 @@
     var list = _pendingCache.length ? _pendingCache : loadPending();
     var sub  = list.find(function (s) { return String(s.id) === String(id); });
     if (!sub) { alert('Submission not found. Please refresh and try again.'); return; }
-    if (!confirm('Approve and add to papers list?')) return;
 
     /* Collect best OCR data across all images as fallback */
     var det = {};
