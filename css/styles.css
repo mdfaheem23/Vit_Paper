@@ -141,7 +141,7 @@ img { display: block; max-width: 100%; }
   letter-spacing: -.02em;
   color: var(--text);
 }
-.nav-logo span { color: var(--primary-lt); }
+.nav-logo > span { /* per-letter colors set inline */ }
 .nav-links {
   display: flex;
   align-items: center;
