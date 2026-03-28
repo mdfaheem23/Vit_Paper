@@ -385,7 +385,8 @@
     setVal('eCode',    paper.code    || '');
     setVal('eYear',    paper.year    || '');
     setVal('eUrl',     paper.url !== '#' ? (paper.url || '') : '');
-    var ee = document.getElementById('eExam'); if (ee) ee.value = paper.exam || '';
+    var ec = document.getElementById('eCourse'); if (ec) ec.value = paper.course || '';
+    var ee = document.getElementById('eExam');   if (ee) ee.value = paper.exam   || '';
     editModal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     setTimeout(function () { editModal.querySelector('.modal-glass').classList.add('modal-open'); }, 10);
@@ -406,6 +407,7 @@
       window.Papers && window.Papers.updatePaper(paper.id, {
         subject : getVal('eSubject') || undefined,
         code    : getVal('eCode').toUpperCase() || undefined,
+        course  : getVal('eCourse') || undefined,
         year    : parseInt(getVal('eYear'), 10) || undefined,
         exam    : getVal('eExam') || undefined,
         url     : getVal('eUrl') || '#',
