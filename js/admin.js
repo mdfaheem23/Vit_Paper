@@ -174,6 +174,7 @@
         '<td class="mono">' + escHtml(p.code) + '</td>' +
         '<td>' + (p.year || '—') + '</td>' +
         '<td><span class="exam-badge exam-' + (p.exam || '').toLowerCase() + '">' + escHtml(p.exam) + '</span></td>' +
+        '<td class="mono" style="font-size:.78rem">' + (p.slot ? escHtml(p.slot) : '<span style="color:var(--text-muted)">—</span>') + '</td>' +
         '<td><span class="source-badge source-' + (p.source || 'seed') + '">' + (p.source || 'seed') + '</span></td>' +
         '<td>' + (
           p.url && p.url !== '#'
