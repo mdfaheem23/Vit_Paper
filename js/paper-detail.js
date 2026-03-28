@@ -143,7 +143,7 @@
             '<button id="pdDownloadAll" onclick="window.downloadAllPhotos()" ' +
             'style="display:flex;align-items:center;gap:.4rem;padding:.45rem 1rem;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.4);border-radius:8px;color:#c4b5fd;font-size:.8rem;font-family:inherit;cursor:pointer;transition:all .2s" ' +
             'onmouseover="this.style.background=\'rgba(124,58,237,.28)\'" onmouseout="this.style.background=\'rgba(124,58,237,.15)\'">' +
-              '↓ Download All Photos' +
+              '↓ Download PDF' +
             '</button>' +
           '</div>' +
           imgHtml +
@@ -262,7 +262,7 @@
     } catch (e) {
       alert('PDF generation failed: ' + e.message);
     } finally {
-      if (btn) { btn.textContent = '↓ Download All Photos'; btn.disabled = false; }
+      if (btn) { btn.textContent = '↓ Download PDF'; btn.disabled = false; }
     }
   };
 

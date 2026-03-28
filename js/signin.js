@@ -354,7 +354,7 @@
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:.75rem;flex-wrap:wrap;gap:.5rem">' +
           '<button onclick="window.downloadPendingPdf(\'' + sid + '\')" style="background:rgba(99,102,241,.1);color:#a5b4fc;border:1px solid rgba(99,102,241,.25);padding:.35rem .9rem;border-radius:7px;cursor:pointer;font-size:.75rem;display:flex;align-items:center;gap:.35rem">' +
             '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' +
-            'Download Photos PDF' +
+            'Download PDF' +
           '</button>' +
           '<button onclick="window.approveSubmission(\'' + sid + '\')" style="background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3);padding:.4rem 1.4rem;border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:600">✓ Approve &amp; Add Paper</button>' +
         '</div>' +
