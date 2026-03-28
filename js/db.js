@@ -174,6 +174,36 @@
       { status: 'approved' });
   }
 
+  /* Approve by DELETE + INSERT (works when PATCH is blocked by RLS) */
+  async function approveSubmission(pendingId, row) {
+    var newId = (crypto.randomUUID ? crypto.randomUUID() : pendingId + '_approved');
+    await sbDelete('/rest/v1/' + TABLE + '?id=eq.' + encodeURIComponent(pendingId));
+    await sbPost('/rest/v1/' + TABLE, {
+      id          : newId,
+      student_name: row.studentName || null,
+      code        : row.code        || null,
+      subject     : row.subject     || null,
+      course      : row.course      || null,
+      year        : row.year        || null,
+      exam        : row.exam        || null,
+      semester    : row.semester    || null,
+      slot        : row.slot        || null,
+      batch       : row.batch       || null,
+      url         : row.url         || null,
+      notes       : row.notes       || null,
+      submitted_at: row.submittedAt,
+      status      : 'approved',
+      images      : row.images      || []
+    });
+    return newId;
+  }
+
+  /* Delete an approved paper from Supabase */
+  async function deleteApprovedPaper(id) {
+    if (!configured()) return;
+    await sbDelete('/rest/v1/' + TABLE + '?id=eq.' + encodeURIComponent(id));
+  }
+
   async function rejectPending(id) {
     if (!configured()) return;
     await sbDelete('/rest/v1/' + TABLE + '?id=eq.' + encodeURIComponent(id));
@@ -227,13 +257,15 @@
   }
 
   window.DB = {
-    configured         : configured,
-    savePending        : savePending,
-    loadPending        : loadPending,
-    approvePending     : approvePending,
-    rejectPending      : rejectPending,
-    loadApprovedPapers : loadApprovedPapers,
+    configured          : configured,
+    savePending         : savePending,
+    loadPending         : loadPending,
+    approvePending      : approvePending,
+    approveSubmission   : approveSubmission,
+    rejectPending       : rejectPending,
+    deleteApprovedPaper : deleteApprovedPaper,
+    loadApprovedPapers  : loadApprovedPapers,
     /* expose localStorage helpers for callers that still maintain LS in parallel */
-    lsRemove           : lsRemovePending
+    lsRemove            : lsRemovePending
   };
 })();

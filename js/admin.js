@@ -199,12 +199,30 @@
     /* Delete listeners */
     adminTableBody.querySelectorAll('[data-del]').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        var id = parseInt(btn.dataset.del, 10);
-        if (confirm('Delete this paper? This cannot be undone.')) {
-          window.Papers.deletePaper(id);
-          renderTable();
-          updateStats();
+        var rawId = btn.dataset.del;
+        if (!confirm('Delete this paper? This cannot be undone.')) return;
+
+        /* Remove from vit_qp_extra (numeric IDs) */
+        var numId = parseInt(rawId, 10);
+        if (!isNaN(numId)) window.Papers.deletePaper(numId);
+
+        /* Remove from vit_approved_cache (UUID IDs) */
+        if (window.Papers && window.Papers.saveApprovedCache) {
+          try {
+            var cached = JSON.parse(localStorage.getItem('vit_approved_cache') || '[]');
+            var after  = cached.filter(function (p) { return String(p.id) !== rawId; });
+            if (after.length !== cached.length) {
+              window.Papers.saveApprovedCache(after);
+              /* Also remove from Supabase */
+              if (window.DB && window.DB.configured()) {
+                window.DB.deleteApprovedPaper(rawId).catch(function (e) { console.warn('DB delete approved:', e); });
+              }
+            }
+          } catch (e) {}
         }
+
+        renderTable();
+        updateStats();
       });
     });
   }
@@ -729,24 +747,39 @@
       notes   : sub.notes
     };
 
-    /* Add to local approved cache immediately for instant display */
-    if (window.Papers && window.Papers.saveApprovedCache) {
-      try {
-        var cached = JSON.parse(localStorage.getItem('vit_approved_cache') || '[]');
-        cached = cached.filter(function (p) { return String(p.id) !== String(sub.id); });
-        cached.push(approvedPaper);
-        window.Papers.saveApprovedCache(cached);
-      } catch (e) {}
+    /* Persist to Supabase (DELETE pending + INSERT approved) then update local cache */
+    if (window.DB && window.DB.configured()) {
+      window.DB.approveSubmission(id, sub).then(function (newId) {
+        /* Use the new Supabase ID so loadApprovedPapers can find it later */
+        approvedPaper.id = newId;
+        _updateApprovedCache(approvedPaper);
+        renderTable();
+        updateStats();
+      }).catch(function (e) {
+        console.warn('DB approveSubmission failed:', e);
+        /* Fallback: save locally with original ID */
+        _updateApprovedCache(approvedPaper);
+        renderTable();
+        updateStats();
+      });
+    } else {
+      _updateApprovedCache(approvedPaper);
     }
 
-    /* Mark as approved in Supabase */
-    if (window.DB && window.DB.configured()) {
-      window.DB.approvePending(id).catch(function (e) { console.warn('DB approve:', e); });
-    }
     savePending(list.filter(function (s) { return s.id !== id; }));
     renderTable();
     updateStats();
     renderPending();
+  }
+
+  function _updateApprovedCache(paper) {
+    if (!window.Papers || !window.Papers.saveApprovedCache) return;
+    try {
+      var cached = JSON.parse(localStorage.getItem('vit_approved_cache') || '[]');
+      cached = cached.filter(function (p) { return String(p.id) !== String(paper.id); });
+      cached.push(paper);
+      window.Papers.saveApprovedCache(cached);
+    } catch (e) {}
   }
 
   function rejectPending(id) {
