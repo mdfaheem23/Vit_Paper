@@ -191,8 +191,7 @@
     /* Edit listeners */
     adminTableBody.querySelectorAll('[data-edit]').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        var id = parseInt(btn.dataset.edit, 10);
-        openEditModal(id);
+        openEditModal(btn.dataset.edit);
       });
     });
 
@@ -360,7 +359,7 @@
   if (addPaperForm) addPaperForm.addEventListener('submit', function (e) {
     e.preventDefault();
     var url = getVal('fUrl');
-    if (!url) { var u = document.getElementById('fUrl'); if (u) { u.style.borderColor = '#f87171'; u.focus(); } return; }
+    if (!url || !/^https?:\/\//i.test(url)) { var u = document.getElementById('fUrl'); if (u) { u.style.borderColor = '#f87171'; u.focus(); } return; }
     window.Papers && window.Papers.addPaper({
       subject  : getVal('fSubject') || '(untitled)',
       code     : getVal('fCode').toUpperCase() || '?',
@@ -384,8 +383,8 @@
     if (e.target === editModal) closeEditModal();
   });
 
-  function openEditModal(id) {
-    var paper = (window.Papers ? window.Papers.getPapers() : []).find(function (p) { return p.id === id; });
+  function openEditModal(rawId) {
+    var paper = (window.Papers ? window.Papers.getPapers() : []).find(function (p) { return String(p.id) === String(rawId); });
     if (!paper || !editModal) return;
     setVal('ePaperId', paper.id);
     setVal('eSubject', paper.subject || '');
@@ -406,15 +405,19 @@
 
   if (editPaperForm) editPaperForm.addEventListener('submit', function (e) {
     e.preventDefault();
-    var id = parseInt(getVal('ePaperId'), 10);
-    window.Papers && window.Papers.updatePaper(id, {
-      subject : getVal('eSubject') || undefined,
-      code    : getVal('eCode').toUpperCase() || undefined,
-      year    : parseInt(getVal('eYear'), 10) || undefined,
-      exam    : getVal('eExam') || undefined,
-      url     : getVal('eUrl') || '#',
-      source  : 'admin'
-    });
+    var rawId  = getVal('ePaperId');
+    var papers = window.Papers ? window.Papers.getPapers() : [];
+    var paper  = papers.find(function (p) { return String(p.id) === rawId; });
+    if (paper) {
+      window.Papers && window.Papers.updatePaper(paper.id, {
+        subject : getVal('eSubject') || undefined,
+        code    : getVal('eCode').toUpperCase() || undefined,
+        year    : parseInt(getVal('eYear'), 10) || undefined,
+        exam    : getVal('eExam') || undefined,
+        url     : getVal('eUrl') || '#',
+        source  : 'admin'
+      });
+    }
     closeEditModal();
     renderTable();
     updateStats();

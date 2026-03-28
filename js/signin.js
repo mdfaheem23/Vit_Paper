@@ -388,8 +388,6 @@
 
   /* ── Approve — auto-fills from submission + OCR; uses manual fields if open ── */
   window.approveSubmission = async function (id) {
-    if (!confirm('Approve and add to papers list?')) return;
-
     var list = [];
     try { list = JSON.parse(localStorage.getItem('vit_pending') || '[]'); } catch (e) {}
     var sub = list.find(function (s) { return s.id === id; });
@@ -446,7 +444,7 @@
     /* Collect non-empty image thumbnails */
     var savedImages = (sub.images || []).map(function (img) { return img.thumb || null; }).filter(Boolean);
 
-    window.Papers && window.Papers.addPaper({
+    var approvedPaper = {
       subject  : subject,
       code     : code,
       course   : course,
@@ -457,13 +455,28 @@
       batch    : batch,
       url      : url,
       images   : savedImages.length ? savedImages : undefined,
-      notes    : sub.notes || '',
-      source   : 'admin'
-    });
+      notes    : sub.notes || ''
+    };
 
-    /* Persist to DB and clean up localStorage */
     if (window.DB && window.DB.configured()) {
-      try { await window.DB.approvePending(id); } catch (e) { /* DB approve failed — localStorage already cleaned */ }
+      /* DELETE+INSERT (works around Supabase RLS blocking PATCH) */
+      try {
+        var newId = await window.DB.approveSubmission(id, Object.assign({}, approvedPaper, { submittedAt: sub.submittedAt, studentName: sub.studentName }));
+        approvedPaper.id = newId;
+      } catch (e) { /* DB failed — local cache only */ }
+      /* Update approved cache so paper shows immediately for all users */
+      if (window.Papers && window.Papers.saveApprovedCache) {
+        try {
+          var cached = JSON.parse(localStorage.getItem('vit_approved_cache') || '[]');
+          if (approvedPaper.id) {
+            cached = cached.filter(function (p) { return String(p.id) !== String(approvedPaper.id); });
+            cached.push(approvedPaper);
+          }
+          window.Papers.saveApprovedCache(cached);
+        } catch (e) {}
+      }
+    } else {
+      window.Papers && window.Papers.addPaper(Object.assign({}, approvedPaper, { source: 'admin' }));
     }
     window.DB && window.DB.lsRemove(id);
     window.renderPapers && window.renderPapers();
@@ -508,7 +521,7 @@
     var imgTags = thumbs.map(function (src, i) {
       return '<div style="page-break-inside:avoid;text-align:center;margin-bottom:1.5rem">' +
         '<p style="font-family:sans-serif;font-size:11px;color:#666;margin:0 0 4px">Page ' + (i + 1) + '</p>' +
-        '<img src="' + src + '" style="max-width:100%;max-height:26cm;object-fit:contain;" />' +
+        '<img src="' + escH(src) + '" style="max-width:100%;max-height:26cm;object-fit:contain;" />' +
       '</div>';
     }).join('');
 
@@ -606,8 +619,8 @@
     grid.addEventListener('click', function (e) {
       var editBtn = e.target.closest('[data-id].card-edit-btn');
       var delBtn  = e.target.closest('[data-id].card-del-btn');
-      if (editBtn) { e.stopPropagation(); openEditModal(parseInt(editBtn.dataset.id, 10)); }
-      if (delBtn)  { e.stopPropagation(); deletePaper(parseInt(delBtn.dataset.id, 10)); }
+      if (editBtn) { e.stopPropagation(); openEditModal(editBtn.dataset.id); }
+      if (delBtn)  { e.stopPropagation(); deletePaper(delBtn.dataset.id); }
     });
   }
 
@@ -726,7 +739,7 @@
   if (addPaperForm) addPaperForm.addEventListener('submit', function (e) {
     e.preventDefault();
     var url = getVal('fUrl');
-    if (!url) { var u = document.getElementById('fUrl'); if (u) { u.style.borderColor='#f87171'; u.focus(); } return; }
+    if (!url || !/^https?:\/\//i.test(url)) { var u = document.getElementById('fUrl'); if (u) { u.style.borderColor='#f87171'; u.focus(); } return; }
     window.Papers && window.Papers.addPaper({
       subject  : getVal('fSubject') || '(untitled)',
       code     : getVal('fCode').toUpperCase() || '?',
@@ -756,8 +769,8 @@
     if (e.target === editModal) closeEditModal();
   });
 
-  function openEditModal(id) {
-    var paper = (window.Papers ? window.Papers.getPapers() : []).find(function (p) { return p.id === id; });
+  function openEditModal(rawId) {
+    var paper = (window.Papers ? window.Papers.getPapers() : []).find(function (p) { return String(p.id) === String(rawId); });
     if (!paper || !editModal) return;
     setVal('ePaperId', paper.id);
     setVal('eSubject', paper.subject || '');
@@ -777,15 +790,19 @@
 
   if (editPaperForm) editPaperForm.addEventListener('submit', function (e) {
     e.preventDefault();
-    var id = parseInt(getVal('ePaperId'), 10);
-    window.Papers && window.Papers.updatePaper(id, {
-      subject : getVal('eSubject') || undefined,
-      code    : getVal('eCode').toUpperCase() || undefined,
-      year    : parseInt(getVal('eYear'), 10) || undefined,
-      exam    : getVal('eExam') || undefined,
-      url     : getVal('eUrl') || '#',
-      source  : 'admin'
-    });
+    var rawId  = getVal('ePaperId');
+    var papers = window.Papers ? window.Papers.getPapers() : [];
+    var paper  = papers.find(function (p) { return String(p.id) === rawId; });
+    if (paper) {
+      window.Papers && window.Papers.updatePaper(paper.id, {
+        subject : getVal('eSubject') || undefined,
+        code    : getVal('eCode').toUpperCase() || undefined,
+        year    : parseInt(getVal('eYear'), 10) || undefined,
+        exam    : getVal('eExam') || undefined,
+        url     : getVal('eUrl') || '#',
+        source  : 'admin'
+      });
+    }
     closeEditModal();
     window.renderPapers && window.renderPapers();
   });
