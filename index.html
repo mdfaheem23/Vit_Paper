@@ -36,7 +36,6 @@
       <a href="/" class="nav-logo">VIT<span>QP</span></a>
       <ul class="nav-links">
       </ul>
-      <button class="btn btn-sm btn-primary" id="signInBtn">Sign In</button>
     </div>
   </nav>
 
@@ -167,31 +166,6 @@
     </div>
   </footer>
 
-  <!-- Sign In Modal -->
-  <div class="modal-overlay hidden" id="signInModal">
-    <div class="modal-glass signin-modal">
-      <div class="modal-header">
-        <h2 class="modal-title">Sign In</h2>
-        <button class="modal-close" id="signInClose">✕</button>
-      </div>
-      <p class="signin-sub">Use your Gmail to access the platform</p>
-      <form class="signin-form" id="signInForm">
-        <div class="form-group">
-          <label class="form-label">Gmail Address</label>
-          <input type="email" class="form-input" id="siEmail" placeholder="you@gmail.com" required />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Password</label>
-          <input type="password" class="form-input" id="siPassword" placeholder="Password" />
-          <span class="form-hint">Leave blank for regular access · Admin password required for admin access</span>
-        </div>
-
-        <p class="signin-error hidden" id="siError">Incorrect admin password.</p>
-        <button type="submit" class="btn btn-primary btn-block">Continue</button>
-      </form>
-      <p class="signin-footer">By signing in you agree to use this for educational purposes only.</p>
-    </div>
-  </div>
 
   <!-- Admin FAB + Dropdown Container -->
   <div class="admin-fab-wrap hidden" id="adminFabWrap">
@@ -225,23 +199,6 @@
     </button>
   </div>
 
-  <!-- Admin Dropdown (navbar) -->
-  <div class="admin-dropdown hidden" id="adminDropdown">
-    <button class="admin-dropdown-item" id="adminAddPaperBtn">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Add Paper
-    </button>
-    <button class="admin-dropdown-item" id="adminPendingBtn">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      Review
-      <span class="admin-pending-badge hidden" id="adminNavBadge">0</span>
-    </button>
-    <div style="height:1px;background:rgba(255,255,255,.08);margin:.25rem 0"></div>
-    <button class="admin-dropdown-item" id="adminSignOutBtn" style="color:#f87171;">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      Logout
-    </button>
-  </div>
 
   <!-- Add Paper Modal (Scan-based) -->
   <div class="modal-overlay hidden" id="addModal">
