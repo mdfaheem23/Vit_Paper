@@ -134,6 +134,17 @@
     updateStats();
     renderPending();
     switchTab('papers');
+
+    /* Single event-delegation listener for image reorder buttons */
+    var cardsEl = document.getElementById('pendingCards');
+    if (cardsEl) {
+      cardsEl.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-move]');
+        if (!btn) return;
+        e.stopPropagation();
+        moveImage(btn.dataset.subid, parseInt(btn.dataset.idx, 10), btn.dataset.dir);
+      });
+    }
   }
 
   /* ─── Render Table ───────────────────────────── */
@@ -495,6 +506,73 @@
     localStorage.setItem(PENDING_KEY, JSON.stringify(list));
   }
 
+  /* ── Build thumbnails HTML for a submission (extracted so reorder can re-use it) ── */
+  function buildThumbsHtml(sub) {
+    var images = sub.images || [];
+    var total  = images.length;
+    return images.map(function (img, idx) {
+      var canLeft  = idx > 0;
+      var canRight = idx < total - 1;
+      var btnStyle = 'border:none;cursor:pointer;border-radius:4px;font-size:.7rem;font-weight:700;padding:.18rem .42rem;line-height:1;transition:background .15s;';
+      var activeBtn = btnStyle + 'background:rgba(124,58,237,.25);color:#c4b5fd;';
+      var disabledBtn = btnStyle + 'background:rgba(255,255,255,.04);color:rgba(255,255,255,.2);cursor:default;';
+      var reorderBar = total > 1
+        ? '<div style="display:flex;align-items:center;justify-content:center;gap:.3rem;margin-top:.35rem">' +
+            '<button style="' + (canLeft  ? activeBtn : disabledBtn) + '"' +
+              (canLeft  ? ' data-move data-subid="' + escHtml(sub.id) + '" data-idx="' + idx + '" data-dir="left"  title="Move left"'  : ' disabled') + '>←</button>' +
+            '<span style="font-size:.62rem;color:var(--text-muted);min-width:2rem;text-align:center">' + (idx + 1) + '/' + total + '</span>' +
+            '<button style="' + (canRight ? activeBtn : disabledBtn) + '"' +
+              (canRight ? ' data-move data-subid="' + escHtml(sub.id) + '" data-idx="' + idx + '" data-dir="right" title="Move right"' : ' disabled') + '>→</button>' +
+          '</div>'
+        : '';
+
+      if (img.isPdf) {
+        return '<div class="pending-thumb-wrap">' +
+          '<div class="pending-thumb scan-item-pdf" style="width:80px;height:80px;font-size:.8rem">PDF</div>' +
+          '<div class="pending-detected" style="background:rgba(239,68,68,.7)">' + escHtml(img.name || 'file.pdf').substring(0, 12) + '</div>' +
+          reorderBar +
+          '</div>';
+      }
+      if (img.thumb) {
+        var validClass = img.valid ? ' valid-thumb' : '';
+        return '<div class="pending-thumb-wrap">' +
+          '<img class="pending-thumb' + validClass + '" src="' + escHtml(img.thumb) + '"' +
+          ' onclick="var lb=document.getElementById(\'photoLightbox\');var li=document.getElementById(\'photoLightboxImg\');if(lb&&li){li.src=this.src;lb.style.display=\'flex\';}" style="cursor:zoom-in" />' +
+          (img.valid ? '<div class="pending-detected">' + escHtml(img.detected.courseCode || '') + '</div>' : '') +
+          reorderBar +
+          '</div>';
+      }
+      /* Placeholder */
+      return '<div class="pending-thumb-wrap">' +
+        '<div class="pending-thumb" style="width:80px;height:80px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--text-muted);text-align:center;padding:.3rem">' +
+          escHtml(img.name || 'image').substring(0, 14) +
+        '</div>' +
+        reorderBar +
+        '</div>';
+    }).join('');
+  }
+
+  /* ── Move an image left/right within a submission ── */
+  function moveImage(subId, idx, dir) {
+    var sub = _pendingCache.find(function (s) { return s.id === subId; });
+    if (!sub || !sub.images) return;
+    var newIdx = dir === 'left' ? idx - 1 : idx + 1;
+    if (newIdx < 0 || newIdx >= sub.images.length) return;
+
+    /* Swap */
+    var tmp = sub.images[idx];
+    sub.images[idx]    = sub.images[newIdx];
+    sub.images[newIdx] = tmp;
+
+    /* Re-render just the thumbs section of this card */
+    var cardsEl = document.getElementById('pendingCards');
+    if (!cardsEl) return;
+    var card = cardsEl.querySelector('.pending-card[data-id="' + subId + '"]');
+    if (!card) return;
+    var thumbsEl = card.querySelector('.pending-thumbs');
+    if (thumbsEl) thumbsEl.innerHTML = buildThumbsHtml(sub);
+  }
+
   async function renderPending() {
     var list = window.DB ? await window.DB.loadPending() : loadPending();
     _pendingCache = list; /* keep a reference so approve/reject can find the full sub object */
@@ -519,28 +597,7 @@
         ? new Date(sub.submittedAt).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })
         : '—';
 
-      var thumbsHtml = (sub.images || []).map(function (img) {
-        if (img.isPdf) {
-          return '<div class="pending-thumb-wrap">' +
-            '<div class="pending-thumb scan-item-pdf" style="width:80px;height:80px;font-size:.8rem">PDF</div>' +
-            '<div class="pending-detected" style="background:rgba(239,68,68,.7)">' + escHtml(img.name || 'file.pdf').substring(0,12) + '</div>' +
-            '</div>';
-        }
-        if (img.thumb) {
-          var validClass = img.valid ? ' valid-thumb' : '';
-          return '<div class="pending-thumb-wrap">' +
-            '<img class="pending-thumb' + validClass + '" src="' + escHtml(img.thumb) + '"' +
-            ' onclick="var lb=document.getElementById(\'photoLightbox\');var li=document.getElementById(\'photoLightboxImg\');if(lb&&li){li.src=this.src;lb.style.display=\'flex\';}" style="cursor:zoom-in" />' +
-            (img.valid ? '<div class="pending-detected">' + escHtml(img.detected.courseCode || '') + '</div>' : '') +
-            '</div>';
-        }
-        /* No thumbnail yet — show placeholder so the image is still counted */
-        return '<div class="pending-thumb-wrap">' +
-          '<div class="pending-thumb" style="width:80px;height:80px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--text-muted);text-align:center;padding:.3rem">' +
-            escHtml(img.name || 'image').substring(0, 14) +
-          '</div>' +
-        '</div>';
-      }).join('');
+      var thumbsHtml = buildThumbsHtml(sub);
 
       var validImgs = (sub.images || []).filter(function (i) { return i.valid; });
       var detectedSummary = validImgs.length
