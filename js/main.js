@@ -140,23 +140,41 @@
         .to(logoM, { scaleX: 1, scaleY: 1, duration: 0.38, ease: 'elastic.out(1, 0.5)' });
     }
 
-    /* ── Hover wave ── */
+    /* ── Hover → same expand animation ── */
+    var _hoverTl = null;
+    var _expanding = false;
+
     logo.addEventListener('mouseenter', function () {
-      gsap.to(letters, {
-        y: -6, scale: 1.18,
-        rotation: function (i) { return i % 2 === 0 ? -10 : 10; },
-        duration: 0.3,
-        ease: 'back.out(2.5)',
-        stagger: 0.05
+      if (_expanding) return;
+      _expanding = true;
+      if (_hoverTl) _hoverTl.kill();
+
+      _hoverTl = gsap.timeline({
+        onComplete: function () { _expanding = false; }
       });
+      _hoverTl
+        .to(logoSpace,  { width: spaceW  + 4, duration: 0.22, ease: 'back.out(2)' })
+        .to(logoSpace2, { width: spaceW2 + 4, duration: 0.22, ease: 'back.out(2)' }, '<')
+        .to(logoM, { scaleX: 0.55, scaleY: 1.35, duration: 0.14, ease: 'power2.in' }, '-=0.05')
+        .to(expand, { width: expandedW, duration: 0.48, ease: 'elastic.out(1, 0.65)' }, '-=0.02')
+        .to(logoM, { scaleX: 1, scaleY: 1, duration: 0.28, ease: 'back.out(2.5)' }, '-=0.38')
+        .to([star1, star2], { opacity: 1, scale: 1, rotation: 360, transformOrigin: 'center', duration: 0.3, ease: 'back.out(3)', stagger: 0.07 }, '-=0.25')
+        .to([dot1, dot2],   { opacity: 1, scale: 1, duration: 0.22, ease: 'back.out(3)', stagger: 0.05 }, '-=0.18')
+        .to(wiggle,         { opacity: 1, duration: 0.25, ease: 'power2.out' }, '-=0.12');
     });
+
     logo.addEventListener('mouseleave', function () {
-      gsap.to(letters, {
-        y: 0, scale: 1, rotation: 0,
-        duration: 0.5,
-        ease: 'elastic.out(1, 0.4)',
-        stagger: 0.04
-      });
+      if (_hoverTl) _hoverTl.kill();
+      _expanding = false;
+
+      _hoverTl = gsap.timeline();
+      _hoverTl
+        .to([star1, star2, dot1, dot2, wiggle], { opacity: 0, scale: 0.5, duration: 0.2, ease: 'power2.in', stagger: 0.03 })
+        .to(expand,     { width: 0, duration: 0.3, ease: 'power3.in' }, '-=0.08')
+        .to(logoSpace,  { width: 0, duration: 0.2, ease: 'power2.in' }, '-=0.22')
+        .to(logoSpace2, { width: 0, duration: 0.2, ease: 'power2.in' }, '<')
+        .to(logoM, { scaleX: 1.2, scaleY: 0.8, duration: 0.08, ease: 'power2.in' }, '-=0.08')
+        .to(logoM, { scaleX: 1,   scaleY: 1,   duration: 0.32, ease: 'elastic.out(1, 0.5)' });
     });
   }
 
