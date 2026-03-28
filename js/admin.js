@@ -422,7 +422,7 @@
     var url      = getVal('fUrl');
     var notes    = getVal('fNotes');
 
-    if (!url) {
+    if (!url || (url !== '#' && !/^https?:\/\//i.test(url))) {
       document.getElementById('fUrl').classList.add('form-input-error');
       document.getElementById('fUrl').focus();
       return;
@@ -495,6 +495,7 @@
     var url     = document.getElementById('eUrl').value.trim();
 
     if (!subject || !code) return;
+    if (url && url !== '#' && !/^https?:\/\//i.test(url)) return;
 
     window.Papers.updatePaper(id, {
       subject : subject,
@@ -619,7 +620,7 @@
       var detectedSummary = validImgs.length
         ? validImgs.map(function (i) {
             return [i.detected.courseCode, i.detected.slot, i.detected.courseName]
-              .filter(Boolean).join(' · ');
+              .filter(Boolean).map(escHtml).join(' · ');
           }).join('<br>')
         : '<span style="color:var(--text-muted)">No fields auto-detected — manual review</span>';
 
@@ -699,7 +700,7 @@
     var imgTags = thumbs.map(function (src, i) {
       return '<div style="page-break-inside:avoid;text-align:center;margin-bottom:1.5rem">' +
         '<p style="font-family:sans-serif;font-size:11px;color:#666;margin:0 0 4px">Page ' + (i + 1) + '</p>' +
-        '<img src="' + src + '" style="max-width:100%;max-height:26cm;object-fit:contain;" />' +
+        '<img src="' + escHtml(src) + '" style="max-width:100%;max-height:26cm;object-fit:contain;" />' +
       '</div>';
     }).join('');
 

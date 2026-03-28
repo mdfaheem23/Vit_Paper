@@ -138,11 +138,11 @@
     papers.forEach(function (p, i) {
       var isMic    = p.course === 'MIC';
       var hasUrl   = p.url && p.url !== '#';
-      var examCls  = 'exam-' + p.exam.toLowerCase();
+      var examCls  = 'exam-' + (/^(cat1|cat2|fat)$/i.test(p.exam || '') ? p.exam.toLowerCase() : 'default');
       var batchTag = p.batch ? '<span class="card-tag">' + p.batch + '</span>' : '';
 
       var downloadBtn = hasUrl
-        ? '<a href="' + escHtml(p.url) + '" target="_blank" rel="noopener" class="btn btn-sm ' + (isMic ? 'btn-primary' : 'btn-accent') + '" onclick="event.stopPropagation()">↓ PDF</a>'
+        ? '<a href="' + escHtml(p.url) + '" target="_blank" rel="noopener noreferrer" class="btn btn-sm ' + (isMic ? 'btn-primary' : 'btn-accent') + '" onclick="event.stopPropagation()">↓ PDF</a>'
         : '';
 
       var card = document.createElement('div');

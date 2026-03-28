@@ -90,9 +90,9 @@
   var actionsEl = document.getElementById('paperActions');
   if (actionsEl) {
     var embedUrl = driveEmbedUrl(paper.url);
-    if (embedUrl && paper.url !== '#') {
+    if (embedUrl && paper.url !== '#' && /^https?:\/\//i.test(paper.url)) {
       actionsEl.innerHTML =
-        '<a href="' + escH(paper.url) + '" target="_blank" rel="noopener" class="btn btn-primary">↓ Open / Download</a>' +
+        '<a href="' + escH(paper.url) + '" target="_blank" rel="noopener noreferrer" class="btn btn-primary">↓ Open / Download</a>' +
         '<a href="/#papers" class="btn btn-ghost">← All Papers</a>';
     } else {
       actionsEl.innerHTML = '<a href="/#papers" class="btn btn-ghost">← All Papers</a>';
@@ -103,7 +103,7 @@
   var viewerWrap = document.getElementById('paperViewerWrap');
   if (viewerWrap) {
     var embedUrl = driveEmbedUrl(paper.url);
-    if (embedUrl && paper.url !== '#') {
+    if (embedUrl && paper.url !== '#' && /^https?:\/\//i.test(paper.url)) {
       viewerWrap.innerHTML =
         '<iframe src="' + escH(embedUrl) + '" allowfullscreen loading="lazy" title="' + escH(paper.subject) + '"></iframe>';
     } else if (paper.images && paper.images.length) {
