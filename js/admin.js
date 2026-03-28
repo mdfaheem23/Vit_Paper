@@ -130,11 +130,11 @@
   function showDashboard() {
     loginWall.classList.add('hidden');
     adminDash.classList.remove('hidden');
-    renderTable();
     updateStats();
+    /* Wait for approved cache to load before rendering table (prevents race with papers.js init) */
+    (window.PapersReady || Promise.resolve()).then(function () { renderTable(); });
     renderPending();
     switchTab('papers');
-
   }
 
   /* ─── Render Table ───────────────────────────── */
@@ -747,29 +747,30 @@
       notes   : sub.notes
     };
 
-    /* Persist to Supabase (DELETE pending + INSERT approved) then update local cache */
-    if (window.DB && window.DB.configured()) {
-      window.DB.approveSubmission(id, sub).then(function (newId) {
-        /* Use the new Supabase ID so loadApprovedPapers can find it later */
-        approvedPaper.id = newId;
-        _updateApprovedCache(approvedPaper);
-        renderTable();
-        updateStats();
-      }).catch(function (e) {
-        console.warn('DB approveSubmission failed:', e);
-        /* Fallback: save locally with original ID */
-        _updateApprovedCache(approvedPaper);
-        renderTable();
-        updateStats();
-      });
-    } else {
-      _updateApprovedCache(approvedPaper);
-    }
+    /* Dim card immediately for visual feedback while DB ops run */
+    var pendingCard = document.querySelector('.pending-card[data-id="' + id + '"]');
+    if (pendingCard) { pendingCard.style.opacity = '.4'; pendingCard.style.pointerEvents = 'none'; }
 
     savePending(list.filter(function (s) { return s.id !== id; }));
-    renderTable();
-    updateStats();
-    renderPending();
+
+    function _afterApprove(paper) {
+      _updateApprovedCache(paper);
+      renderTable();
+      updateStats();
+      renderPending(); /* called AFTER DB completes — no race condition */
+    }
+
+    if (window.DB && window.DB.configured()) {
+      window.DB.approveSubmission(id, sub).then(function (newId) {
+        approvedPaper.id = newId;
+        _afterApprove(approvedPaper);
+      }).catch(function (e) {
+        console.warn('DB approveSubmission failed:', e);
+        _afterApprove(approvedPaper);
+      });
+    } else {
+      _afterApprove(approvedPaper);
+    }
   }
 
   function _updateApprovedCache(paper) {
