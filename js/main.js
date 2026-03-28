@@ -67,6 +67,50 @@
     window.addEventListener('scroll', function () {
       nav.classList.toggle('scrolled', window.scrollY > 40);
     }, { passive: true });
+
+    /* ── Playful logo letter animation ── */
+    var logo = nav.querySelector('.nav-logo');
+    if (!logo || typeof gsap === 'undefined') return;
+
+    /* Split into individual letter spans */
+    var text = logo.textContent;
+    logo.innerHTML = text.split('').map(function (ch) {
+      return '<span class="logo-letter" style="display:inline-block">' + ch + '</span>';
+    }).join('');
+    var letters = logo.querySelectorAll('.logo-letter');
+
+    /* Entrance: letters drop in with elastic stagger */
+    gsap.from(letters, {
+      y: -28,
+      opacity: 0,
+      rotation: function (i) { return (i % 2 === 0 ? -18 : 18); },
+      duration: 0.6,
+      ease: 'elastic.out(1, 0.5)',
+      stagger: 0.07,
+      delay: 0.1
+    });
+
+    /* Hover: each letter bounces up with wave stagger */
+    logo.addEventListener('mouseenter', function () {
+      gsap.to(letters, {
+        y: -7,
+        scale: 1.2,
+        rotation: function (i) { return (i % 2 === 0 ? -10 : 10); },
+        duration: 0.35,
+        ease: 'back.out(2)',
+        stagger: 0.05
+      });
+    });
+    logo.addEventListener('mouseleave', function () {
+      gsap.to(letters, {
+        y: 0,
+        scale: 1,
+        rotation: 0,
+        duration: 0.55,
+        ease: 'elastic.out(1, 0.4)',
+        stagger: 0.04
+      });
+    });
   }
 
   /* ════════════════════════════════════════
