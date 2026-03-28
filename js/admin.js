@@ -690,8 +690,8 @@
   function approvePending(id) {
     /* Use DB cache when available (deployed), fall back to localStorage */
     var list = _pendingCache.length ? _pendingCache : loadPending();
-    var sub  = list.find(function (s) { return s.id === id; });
-    if (!sub) return;
+    var sub  = list.find(function (s) { return String(s.id) === String(id); });
+    if (!sub) { alert('DEBUG: submission not found in cache. Cache length: ' + _pendingCache.length + ', id: ' + id); return; }
     if (!confirm('Approve and add to papers list?')) return;
 
     /* Collect best OCR data across all images as fallback */
