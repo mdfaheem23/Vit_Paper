@@ -7,8 +7,8 @@
 
   /* ─── Credentials ────────────────────────────── */
   var _cfg        = window.ADMIN_CONFIG || {};
-  var ADMIN_EMAIL = _cfg.email    || 'faasu2327@gmail.com';
-  var PASS_HASH   = _cfg.passHash || 'bc5b9bdbac1e8272de856c318c0ac4e8ce0c993782862f10a7853334247ce324';
+  var ADMIN_EMAIL = _cfg.email    || '';
+  var PASS_HASH   = _cfg.passHash || '';
 
   /* ─── SHA-256 ────────────────────────────────── */
   async function sha256(message) {
@@ -483,6 +483,7 @@
   ════════════════════════════════════════════════ */
 
   var PENDING_KEY = 'vit_pending';
+  var _pendingCache = []; /* in-memory cache of last DB fetch */
 
   /* Always delegates to DB layer (falls back to localStorage when not configured) */
   function loadPending() {
@@ -496,6 +497,7 @@
 
   async function renderPending() {
     var list = window.DB ? await window.DB.loadPending() : loadPending();
+    _pendingCache = list; /* keep a reference so approve/reject can find the full sub object */
     var emptyEl = document.getElementById('pendingEmpty');
     var cardsEl = document.getElementById('pendingCards');
     if (!cardsEl) return;
@@ -644,7 +646,8 @@
   }
 
   function approvePending(id) {
-    var list = loadPending();
+    /* Use DB cache when available (deployed), fall back to localStorage */
+    var list = _pendingCache.length ? _pendingCache : loadPending();
     var sub  = list.find(function (s) { return s.id === id; });
     if (!sub) return;
     if (!confirm('Approve and add to papers list?')) return;

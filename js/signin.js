@@ -6,8 +6,8 @@
   'use strict';
 
   var _cfg        = window.ADMIN_CONFIG || {};
-  var ADMIN_EMAIL = _cfg.email    || 'faasu2327@gmail.com';
-  var ADMIN_HASH  = _cfg.passHash || 'bc5b9bdbac1e8272de856c318c0ac4e8ce0c993782862f10a7853334247ce324';
+  var ADMIN_EMAIL = _cfg.email    || '';
+  var ADMIN_HASH  = _cfg.passHash || '';
 
   async function sha256(str) {
     var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));

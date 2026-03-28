@@ -12,21 +12,20 @@ const fs     = require('fs');
 const path   = require('path');
 const crypto = require('crypto');
 
-/* ── Read .env ─────────────────────────────────────────── */
-const envPath = path.join(__dirname, '.env');
-if (!fs.existsSync(envPath)) {
-  console.error('ERROR: .env file not found. Create it first.');
-  process.exit(1);
-}
+/* ── Read env — process.env first (Vercel), then .env file ── */
+const env = Object.assign({}, process.env);
 
-const env = {};
-fs.readFileSync(envPath, 'utf8').split('\n').forEach(line => {
-  line = line.trim();
-  if (!line || line.startsWith('#')) return;
-  const i = line.indexOf('=');
-  if (i < 0) return;
-  env[line.slice(0, i).trim()] = line.slice(i + 1).trim();
-});
+const envPath = path.join(__dirname, '.env');
+if (fs.existsSync(envPath)) {
+  fs.readFileSync(envPath, 'utf8').split('\n').forEach(line => {
+    line = line.trim();
+    if (!line || line.startsWith('#')) return;
+    const i = line.indexOf('=');
+    if (i < 0) return;
+    const k = line.slice(0, i).trim();
+    if (!env[k]) env[k] = line.slice(i + 1).trim(); // process.env takes precedence
+  });
+}
 
 /* ── Validate ──────────────────────────────────────────── */
 const required = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'ADMIN_EMAIL', 'ADMIN_PASSWORD'];

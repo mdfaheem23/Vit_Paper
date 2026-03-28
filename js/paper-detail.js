@@ -86,9 +86,9 @@
     if (embedUrl && paper.url !== '#') {
       actionsEl.innerHTML =
         '<a href="' + escH(paper.url) + '" target="_blank" rel="noopener" class="btn btn-primary">↓ Open / Download</a>' +
-        '<a href="index.html#papers" class="btn btn-ghost">← All Papers</a>';
+        '<a href="/#papers" class="btn btn-ghost">← All Papers</a>';
     } else {
-      actionsEl.innerHTML = '<a href="index.html#papers" class="btn btn-ghost">← All Papers</a>';
+      actionsEl.innerHTML = '<a href="/#papers" class="btn btn-ghost">← All Papers</a>';
     }
   }
 
@@ -145,7 +145,7 @@
           '<div class="unavail-icon">⏳</div>' +
           '<h3>Paper not yet available</h3>' +
           '<p>This paper hasn\'t been uploaded yet. You can contribute by submitting it below.</p>' +
-          '<a href="submit.html" class="btn btn-primary" style="margin-top:.5rem">Submit Paper</a>' +
+          '<a href="/submit" class="btn btn-primary" style="margin-top:.5rem">Submit Paper</a>' +
         '</div>';
     }
   }
@@ -162,7 +162,7 @@
     if (relatedGrid) {
       relatedGrid.innerHTML = related.map(function (p) {
         var hasUrl = p.url && p.url !== '#';
-        return '<a href="paper.html?id=' + p.id + '" class="related-card' + (hasUrl ? '' : ' no-url') + '">' +
+        return '<a href="/paper?id=' + p.id + '" class="related-card' + (hasUrl ? '' : ' no-url') + '">' +
           '<div class="related-card-exam">' + escH(p.exam) + '</div>' +
           '<div class="related-card-name">' + escH(p.subject) + '</div>' +
           '<div class="related-card-meta">' +

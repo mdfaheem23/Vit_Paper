@@ -1,6 +1,7 @@
 # Secrets — never commit these
 .env
 js/admin-config.js
+js/supabase-config.js
 
 # OS
 .DS_Store

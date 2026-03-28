@@ -190,7 +190,7 @@
       /* Navigate to detail page on click (skip admin buttons) */
       card.addEventListener('click', function (e) {
         if (e.target.closest('.card-admin-btn')) return;
-        window.location.href = 'paper.html?id=' + p.id;
+        window.location.href = '/paper?id=' + p.id;
       });
       card.style.cursor = 'pointer';
 
