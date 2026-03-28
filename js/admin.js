@@ -58,6 +58,12 @@
   var editModalClose= document.getElementById('editModalClose');
   var editCancelBtn = document.getElementById('editCancelBtn');
   var editPaperForm = document.getElementById('editPaperForm');
+  var eSlotInput    = document.getElementById('eSlot');
+  if (eSlotInput) eSlotInput.addEventListener('input', function () {
+    var pos = this.selectionStart;
+    this.value = this.value.toUpperCase();
+    this.setSelectionRange(pos, pos);
+  });
 
   /* ─── Session Check (localStorage — persists across tabs and refresh) ── */
   var ADMIN_SESSION_KEY = 'vit_admin_session';
@@ -420,7 +426,8 @@
     setVal('eSubject', paper.subject || '');
     setVal('eCode',    paper.code    || '');
     setVal('eYear',    paper.year    || '');
-    setVal('eUrl',     paper.url !== '#' ? (paper.url || '') : '');
+    setVal('eUrl',  paper.url !== '#' ? (paper.url || '') : '');
+    setVal('eSlot', paper.slot || '');
     var ec = document.getElementById('eCourse'); if (ec) ec.value = paper.course || '';
     var ee = document.getElementById('eExam');   if (ee) ee.value = paper.exam   || '';
     editModal.classList.remove('hidden');
@@ -446,6 +453,7 @@
         course  : getVal('eCourse') || undefined,
         year    : parseInt(getVal('eYear'), 10) || undefined,
         exam    : getVal('eExam') || undefined,
+        slot    : getVal('eSlot').toUpperCase() || undefined,
         url     : getVal('eUrl') || '#',
         source  : 'admin'
       };

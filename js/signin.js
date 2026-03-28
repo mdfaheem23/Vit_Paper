@@ -770,7 +770,8 @@
     setVal('eSubject', paper.subject || '');
     setVal('eCode',    paper.code    || '');
     setVal('eYear',    paper.year    || '');
-    setVal('eUrl',     paper.url !== '#' ? (paper.url || '') : '');
+    setVal('eUrl',  paper.url !== '#' ? (paper.url || '') : '');
+    setVal('eSlot', paper.slot || '');
     var ec = document.getElementById('eCourse'); if (ec) ec.value = paper.course || '';
     var ee = document.getElementById('eExam');   if (ee) ee.value = paper.exam   || '';
     editModal.classList.remove('hidden');
@@ -795,6 +796,7 @@
         course  : getVal('eCourse') || undefined,
         year    : parseInt(getVal('eYear'), 10) || undefined,
         exam    : getVal('eExam') || undefined,
+        slot    : getVal('eSlot').toUpperCase() || undefined,
         url     : getVal('eUrl') || '#',
         source  : 'admin'
       };
