@@ -75,20 +75,13 @@
     });
   }
 
-  /* ─── Slot real-time enforcement ────────────── */
+  /* ─── Slot auto-uppercase ───────────────────── */
   var slotInput = document.getElementById('sSlot');
   if (slotInput) {
-    slotInput.addEventListener('keydown', function (e) {
-      var val   = this.value;
-      var key   = e.key;
-      var isNav = ['Backspace','Delete','Tab','ArrowLeft','ArrowRight'].indexOf(key) !== -1;
-      if (isNav) return;
-      e.preventDefault();
-      if (val.length === 0) {
-        if (/^[A-Ga-g]$/.test(key)) this.value = key.toUpperCase();
-      } else if (val.length === 1) {
-        if (key === '1' || key === '2') this.value = val + key;
-      }
+    slotInput.addEventListener('input', function () {
+      var pos = this.selectionStart;
+      this.value = this.value.toUpperCase();
+      this.setSelectionRange(pos, pos);
     });
   }
 
@@ -227,30 +220,9 @@
   }
 
   /* ─── Slot validation ───────────────────────── */
-  function slotValid() {
-    var el = document.getElementById('sSlot');
-    if (!el || el.value.trim() === '') return true;
-    return /^[A-Ga-g][12]$/.test(el.value.trim());
-  }
-
-  function flashSlot() {
-    var el = document.getElementById('sSlot');
-    if (!el) return;
-    el.style.transition = 'border-color .15s';
-    el.style.borderColor = '#f87171';
-    setTimeout(function () { el.style.borderColor = ''; }, 1200);
-    if (formError) {
-      formError.textContent = 'Slot must be a letter A–G followed by 1 or 2 (e.g. A1, B2, G1).';
-      formError.classList.remove('hidden');
-      setTimeout(function () { formError.classList.add('hidden'); }, 3500);
-    }
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-
   /* ─── Validation ──────────────────────────── */
   function validateForm() {
     if (!requiredFilled()) { flashRequired(); return false; }
-    if (!slotValid()) { flashSlot(); return false; }
     return selectedFiles.length > 0;
   }
 
