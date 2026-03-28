@@ -291,8 +291,8 @@
   }
 
   function resetScanStep() {
-    if (scanStep)        scanStep.classList.remove('hidden');
-    if (addPaperForm)    addPaperForm.classList.add('hidden');
+    if (scanStep)        scanStep.classList.add('hidden');
+    if (addPaperForm)    addPaperForm.classList.remove('hidden');
     if (adminScanStatus) adminScanStatus.classList.add('hidden');
     if (adminFileInput)  adminFileInput.value = '';
     if (detectedPreview) detectedPreview.innerHTML = '';
@@ -313,13 +313,7 @@
   });
 
   function runScan(file) {
-    var isPdf = file.type === 'application/pdf';
-    if (isPdf || !window.OcrScan) { showScanForm(file, null, isPdf); return; }
-    adminScanStatus.classList.remove('hidden');
-    adminScanMsg.textContent = 'Scanning paper…';
-    OcrScan.scanImages([file], function () {}).then(function (results) {
-      showScanForm(file, results[0].info, false);
-    }).catch(function () { showScanForm(file, null, false); });
+    showScanForm(file, null, file.type === 'application/pdf');
   }
 
   function showScanForm(file, info, isPdf) {
