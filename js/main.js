@@ -74,8 +74,9 @@
     var logoV     = document.getElementById('logoV');
     var logoI     = document.getElementById('logoI');
     var logoT     = document.getElementById('logoT');
-    var logoSpace = document.getElementById('logoSpace');
-    var logoM     = document.getElementById('logoM');
+    var logoSpace  = document.getElementById('logoSpace');
+    var logoSpace2 = document.getElementById('logoSpace2');
+    var logoM      = document.getElementById('logoM');
     var expand    = document.getElementById('logoExpand');
     var logoQP    = document.getElementById('logoQP');
     var star1     = document.getElementById('doodleStar1');
@@ -90,10 +91,14 @@
     var expandedW = expand.offsetWidth;
     gsap.set(expand, { width: 0 });
 
-    /* Measure space width */
+    /* Measure space widths */
     gsap.set(logoSpace, { width: 'auto' });
     var spaceW = Math.max(logoSpace.offsetWidth, 6);
     gsap.set(logoSpace, { width: 0 });
+
+    gsap.set(logoSpace2, { width: 'auto' });
+    var spaceW2 = Math.max(logoSpace2 ? logoSpace2.offsetWidth : 0, 6);
+    if (logoSpace2) gsap.set(logoSpace2, { width: 0 });
 
     var letters = [logoV, logoI, logoT, logoM, logoQP].filter(Boolean);
 
@@ -111,8 +116,9 @@
     function runExpand() {
       var tl = gsap.timeline();
       tl
-        /* Space opens between T and M */
-        .to(logoSpace, { width: spaceW + 4, duration: 0.25, ease: 'back.out(2)' })
+        /* Spaces open between T–M and C–Q */
+        .to(logoSpace,  { width: spaceW  + 4, duration: 0.25, ease: 'back.out(2)' })
+        .to(logoSpace2, { width: spaceW2 + 4, duration: 0.25, ease: 'back.out(2)' }, '<')
         /* M squish */
         .to(logoM, { scaleX: 0.55, scaleY: 1.35, duration: 0.16, ease: 'power2.in' }, '-=0.05')
         /* ID MIC slides out */
@@ -128,7 +134,8 @@
         .to([star1, star2, dot1, dot2, wiggle], { opacity: 0, scale: 0.5, duration: 0.25, ease: 'power2.in', stagger: 0.04 })
         /* Collapse */
         .to(expand, { width: 0, duration: 0.35, ease: 'power3.in' }, '-=0.1')
-        .to(logoSpace, { width: 0, duration: 0.22, ease: 'power2.in' }, '-=0.25')
+        .to(logoSpace,  { width: 0, duration: 0.22, ease: 'power2.in' }, '-=0.25')
+        .to(logoSpace2, { width: 0, duration: 0.22, ease: 'power2.in' }, '<')
         .to(logoM, { scaleX: 1.2, scaleY: 0.8, duration: 0.1, ease: 'power2.in' }, '-=0.1')
         .to(logoM, { scaleX: 1, scaleY: 1, duration: 0.38, ease: 'elastic.out(1, 0.5)' });
     }
