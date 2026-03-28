@@ -23,7 +23,8 @@ const SEED_PAPERS = [];
 var _nextId = Date.now();
 
 function createPapersStore(storage) {
-  const STORAGE_KEY = 'vit_qp_extra';
+  const STORAGE_KEY   = 'vit_qp_extra';
+  const APPROVED_KEY  = 'vit_approved_cache';
 
   function getExtra() {
     try { return JSON.parse(storage.getItem(STORAGE_KEY) || '[]'); }
@@ -34,8 +35,17 @@ function createPapersStore(storage) {
     storage.setItem(STORAGE_KEY, JSON.stringify(arr));
   }
 
+  function getApprovedCache() {
+    try { return JSON.parse(storage.getItem(APPROVED_KEY) || '[]'); }
+    catch (e) { return []; }
+  }
+
+  function saveApprovedCache(arr) {
+    try { storage.setItem(APPROVED_KEY, JSON.stringify(arr)); } catch (e) {}
+  }
+
   function getPapers() {
-    return [...SEED_PAPERS, ...getExtra()];
+    return [...SEED_PAPERS, ...getApprovedCache(), ...getExtra()];
   }
 
   function addPaper(paper) {
@@ -76,7 +86,7 @@ function createPapersStore(storage) {
     };
   }
 
-  return { getPapers, addPaper, updatePaper, deletePaper, isSeedPaper, getStats, SEED_PAPERS };
+  return { getPapers, addPaper, updatePaper, deletePaper, isSeedPaper, getStats, saveApprovedCache, SEED_PAPERS };
 }
 
 /* ── Export for Node / Jest ─────────────────── */

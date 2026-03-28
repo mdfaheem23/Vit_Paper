@@ -691,7 +691,7 @@
     /* Use DB cache when available (deployed), fall back to localStorage */
     var list = _pendingCache.length ? _pendingCache : loadPending();
     var sub  = list.find(function (s) { return String(s.id) === String(id); });
-    if (!sub) { alert('DEBUG: submission not found in cache. Cache length: ' + _pendingCache.length + ', id: ' + id); return; }
+    if (!sub) { alert('Submission not found. Please refresh and try again.'); return; }
     if (!confirm('Approve and add to papers list?')) return;
 
     /* Collect best OCR data across all images as fallback */
@@ -710,28 +710,36 @@
     var year     = sub.year     || det.year        || new Date().getFullYear();
     var semester = sub.semester || det.semester;
     var slot     = sub.slot     || det.slot        || '';
-    var batch    = sub.batch    || '';
     var course   = sub.course   || (code.startsWith('CSE') ? 'MIC' : code.startsWith('CSI') ? 'MID' : '?');
 
     /* Collect image thumbnails to save with the paper */
     var savedImages = (sub.images || []).map(function (img) { return img.thumb || null; }).filter(Boolean);
 
-    window.Papers && window.Papers.addPaper({
-      subject  : subject,
-      code     : code,
-      course   : course,
-      year     : year,
-      exam     : exam,
-      semester : semester,
-      slot     : slot || undefined,
-      batch    : batch || undefined,
-      url      : sub.url || '#',
-      images   : savedImages.length ? savedImages : undefined,
-      notes    : sub.notes,
-      source   : 'admin'
-    });
+    var approvedPaper = {
+      id      : sub.id,
+      subject : subject,
+      code    : code,
+      course  : course,
+      year    : year,
+      exam    : exam,
+      semester: semester,
+      slot    : slot || undefined,
+      url     : sub.url || '#',
+      images  : savedImages.length ? savedImages : undefined,
+      notes   : sub.notes
+    };
 
-    /* Remove from DB (Supabase marks approved; localStorage removes) */
+    /* Add to local approved cache immediately for instant display */
+    if (window.Papers && window.Papers.saveApprovedCache) {
+      try {
+        var cached = JSON.parse(localStorage.getItem('vit_approved_cache') || '[]');
+        cached = cached.filter(function (p) { return String(p.id) !== String(sub.id); });
+        cached.push(approvedPaper);
+        window.Papers.saveApprovedCache(cached);
+      } catch (e) {}
+    }
+
+    /* Mark as approved in Supabase */
     if (window.DB && window.DB.configured()) {
       window.DB.approvePending(id).catch(function (e) { console.warn('DB approve:', e); });
     }

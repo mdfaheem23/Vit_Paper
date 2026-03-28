@@ -30,15 +30,18 @@
   var _session = (function () { try { return JSON.parse(localStorage.getItem('vit_session') || 'null'); } catch(e) { return null; } })();
   var isAdmin  = _session && _session.role === 'admin';
 
-  /* ── Load paper ── */
-  var id = parseInt(getParam('id'), 10);
-  if (!id) {
+  /* ── Load paper (wait for Supabase approved cache if needed) ── */
+  var rawId = getParam('id');
+  if (!rawId) {
     document.getElementById('paperTitle').textContent = 'Paper not found.';
     return;
   }
 
+  (window.PapersReady || Promise.resolve()).then(function () { init(); });
+
+  function init() {
   var papers = window.Papers ? window.Papers.getPapers() : [];
-  var paper  = papers.find(function (p) { return p.id === id; });
+  var paper  = papers.find(function (p) { return String(p.id) === rawId; });
 
   if (!paper) {
     document.getElementById('paperTitle').textContent = 'Paper not found.';
@@ -270,5 +273,7 @@
       navbar.classList.toggle('scrolled', window.scrollY > 20);
     });
   }
+
+  } /* end init() */
 
 })();

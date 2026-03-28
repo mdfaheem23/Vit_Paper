@@ -179,6 +179,32 @@
     await sbDelete('/rest/v1/' + TABLE + '?id=eq.' + encodeURIComponent(id));
   }
 
+  async function loadApprovedPapers() {
+    if (!configured()) return [];
+    try {
+      var rows = await sbGet('/rest/v1/' + TABLE + '?select=*&status=eq.approved&order=submitted_at.desc');
+      return rows.map(function (r) {
+        var imgs = (r.images || []).map(function (img) { return img.thumb || null; }).filter(Boolean);
+        return {
+          id      : r.id,
+          subject : r.subject  || '(untitled)',
+          code    : (r.code    || '').toUpperCase(),
+          course  : r.course   || '?',
+          year    : r.year     || '',
+          exam    : r.exam     || '',
+          semester: r.semester || '',
+          slot    : r.slot     || '',
+          url     : r.url      || '#',
+          images  : imgs.length ? imgs : undefined,
+          notes   : r.notes
+        };
+      });
+    } catch (e) {
+      console.warn('loadApprovedPapers:', e);
+      return [];
+    }
+  }
+
   /* ─── localStorage fallback ────────────────── */
   function lsSavePending(sub) {
     try {
@@ -201,12 +227,13 @@
   }
 
   window.DB = {
-    configured    : configured,
-    savePending   : savePending,
-    loadPending   : loadPending,
-    approvePending: approvePending,
-    rejectPending : rejectPending,
+    configured         : configured,
+    savePending        : savePending,
+    loadPending        : loadPending,
+    approvePending     : approvePending,
+    rejectPending      : rejectPending,
+    loadApprovedPapers : loadApprovedPapers,
     /* expose localStorage helpers for callers that still maintain LS in parallel */
-    lsRemove      : lsRemovePending
+    lsRemove           : lsRemovePending
   };
 })();
