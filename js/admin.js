@@ -135,16 +135,6 @@
     renderPending();
     switchTab('papers');
 
-    /* Single event-delegation listener for image reorder buttons */
-    var cardsEl = document.getElementById('pendingCards');
-    if (cardsEl) {
-      cardsEl.addEventListener('click', function (e) {
-        var btn = e.target.closest('[data-move]');
-        if (!btn) return;
-        e.stopPropagation();
-        moveImage(btn.dataset.subid, parseInt(btn.dataset.idx, 10), btn.dataset.dir);
-      });
-    }
   }
 
   /* ─── Render Table ───────────────────────────── */
@@ -516,13 +506,14 @@
       var btnStyle = 'border:none;cursor:pointer;border-radius:4px;font-size:.7rem;font-weight:700;padding:.18rem .42rem;line-height:1;transition:background .15s;';
       var activeBtn = btnStyle + 'background:rgba(124,58,237,.25);color:#c4b5fd;';
       var disabledBtn = btnStyle + 'background:rgba(255,255,255,.04);color:rgba(255,255,255,.2);cursor:default;';
+      var sid = escHtml(String(sub.id));
       var reorderBar = total > 1
         ? '<div style="display:flex;align-items:center;justify-content:center;gap:.3rem;margin-top:.35rem">' +
             '<button style="' + (canLeft  ? activeBtn : disabledBtn) + '"' +
-              (canLeft  ? ' data-move data-subid="' + escHtml(sub.id) + '" data-idx="' + idx + '" data-dir="left"  title="Move left"'  : ' disabled') + '>←</button>' +
+              (canLeft  ? ' onclick="adminMoveImg(\'' + sid + '\',' + idx + ',\'left\')"  title="Move left"'  : ' disabled') + '>←</button>' +
             '<span style="font-size:.62rem;color:var(--text-muted);min-width:2rem;text-align:center">' + (idx + 1) + '/' + total + '</span>' +
             '<button style="' + (canRight ? activeBtn : disabledBtn) + '"' +
-              (canRight ? ' data-move data-subid="' + escHtml(sub.id) + '" data-idx="' + idx + '" data-dir="right" title="Move right"' : ' disabled') + '>→</button>' +
+              (canRight ? ' onclick="adminMoveImg(\'' + sid + '\',' + idx + ',\'right\')" title="Move right"' : ' disabled') + '>→</button>' +
           '</div>'
         : '';
 
@@ -552,26 +543,20 @@
     }).join('');
   }
 
-  /* ── Move an image left/right within a submission ── */
-  function moveImage(subId, idx, dir) {
-    var sub = _pendingCache.find(function (s) { return s.id === subId; });
+  /* ── Move an image left/right — exposed globally for inline onclick ── */
+  window.adminMoveImg = function (subId, idx, dir) {
+    var sub = _pendingCache.find(function (s) { return String(s.id) === String(subId); });
     if (!sub || !sub.images) return;
     var newIdx = dir === 'left' ? idx - 1 : idx + 1;
     if (newIdx < 0 || newIdx >= sub.images.length) return;
-
-    /* Swap */
     var tmp = sub.images[idx];
     sub.images[idx]    = sub.images[newIdx];
     sub.images[newIdx] = tmp;
-
-    /* Re-render just the thumbs section of this card */
-    var cardsEl = document.getElementById('pendingCards');
-    if (!cardsEl) return;
-    var card = cardsEl.querySelector('.pending-card[data-id="' + subId + '"]');
+    var card = document.querySelector('.pending-card[data-id="' + subId + '"]');
     if (!card) return;
     var thumbsEl = card.querySelector('.pending-thumbs');
     if (thumbsEl) thumbsEl.innerHTML = buildThumbsHtml(sub);
-  }
+  };
 
   async function renderPending() {
     var list = window.DB ? await window.DB.loadPending() : loadPending();
