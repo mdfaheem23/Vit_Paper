@@ -463,7 +463,7 @@
 
     /* Persist to DB and clean up localStorage */
     if (window.DB && window.DB.configured()) {
-      try { await window.DB.approvePending(id); } catch (e) { console.warn('DB approve:', e); }
+      try { await window.DB.approvePending(id); } catch (e) { /* DB approve failed — localStorage already cleaned */ }
     }
     window.DB && window.DB.lsRemove(id);
     window.renderPapers && window.renderPapers();
@@ -473,7 +473,7 @@
   window.rejectSubmission = async function (id) {
     if (!confirm('Reject and delete this submission?')) return;
     if (window.DB && window.DB.configured()) {
-      try { await window.DB.rejectPending(id); } catch (e) { console.warn('DB reject:', e); }
+      try { await window.DB.rejectPending(id); } catch (e) { /* DB reject failed — localStorage already cleaned */ }
     }
     window.DB && window.DB.lsRemove(id);
     renderPendingList();
@@ -796,7 +796,5 @@
   function escH(s) {
     return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
-
-  window.VitAuth = { openAddModal: openAddModal };
 
 })();

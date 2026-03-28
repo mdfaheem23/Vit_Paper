@@ -243,7 +243,7 @@
   }
 
   /* ─── OCR Unavailable Fallback ───────────── */
-  function showOcrUnavailable(msg) {
+  function showOcrUnavailable() {
     if (scanQueue) {
       var note = document.createElement('div');
       note.className = 'scan-overall ok';

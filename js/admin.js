@@ -228,7 +228,7 @@
             window.Papers.saveApprovedCache(after);
             if (window.DB && window.DB.configured()) {
               toRemove.forEach(function (p) {
-                window.DB.deleteApprovedPaper(String(p.id)).catch(function (e) { console.warn('DB delete:', e); });
+                window.DB.deleteApprovedPaper(String(p.id)).catch(function () {});
               });
             }
           } catch (e) {}
@@ -276,133 +276,80 @@
     if (e.target === addModal) closeAddModal();
   });
 
+  /* ── Add Modal functions ── */
   function openAddModal() {
     resetScanStep();
+    if (!addModal) return;
     addModal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
-    setTimeout(function () {
-      addModal.querySelector('.modal-glass').classList.add('modal-open');
-    }, 10);
+    setTimeout(function () { addModal.querySelector('.modal-glass').classList.add('modal-open'); }, 10);
   }
 
   function closeAddModal() {
+    if (!addModal) return;
     addModal.querySelector('.modal-glass').classList.remove('modal-open');
-    setTimeout(function () {
-      addModal.classList.add('hidden');
-      document.body.style.overflow = '';
-    }, 250);
+    setTimeout(function () { addModal.classList.add('hidden'); document.body.style.overflow = ''; }, 250);
   }
 
   function resetScanStep() {
-    if (scanStep)       scanStep.classList.remove('hidden');
-    if (addPaperForm)   addPaperForm.classList.add('hidden');
+    if (scanStep)        scanStep.classList.remove('hidden');
+    if (addPaperForm)    addPaperForm.classList.add('hidden');
     if (adminScanStatus) adminScanStatus.classList.add('hidden');
     if (adminFileInput)  adminFileInput.value = '';
     if (detectedPreview) detectedPreview.innerHTML = '';
   }
 
-  /* Upload zone click / drag */
   if (adminUploadZone) {
-    adminUploadZone.addEventListener('click', function (e) {
-      if (e.target !== adminFileInput) adminFileInput.click();
-    });
-    adminUploadZone.addEventListener('dragover', function (e) {
-      e.preventDefault();
-      adminUploadZone.classList.add('drag-over');
-    });
-    adminUploadZone.addEventListener('dragleave', function () {
-      adminUploadZone.classList.remove('drag-over');
-    });
+    adminUploadZone.addEventListener('click', function (e) { if (e.target !== adminFileInput) adminFileInput.click(); });
+    adminUploadZone.addEventListener('dragover', function (e) { e.preventDefault(); adminUploadZone.classList.add('drag-over'); });
+    adminUploadZone.addEventListener('dragleave', function () { adminUploadZone.classList.remove('drag-over'); });
     adminUploadZone.addEventListener('drop', function (e) {
-      e.preventDefault();
-      adminUploadZone.classList.remove('drag-over');
-      var files = Array.from(e.dataTransfer.files).filter(function (f) {
-        return f.type.startsWith('image/');
-      });
+      e.preventDefault(); adminUploadZone.classList.remove('drag-over');
+      var files = Array.from(e.dataTransfer.files).filter(function (f) { return f.type.startsWith('image/') || f.type === 'application/pdf'; });
       if (files.length) runScan(files[0]);
     });
   }
-
-  adminFileInput && adminFileInput.addEventListener('change', function () {
+  if (adminFileInput) adminFileInput.addEventListener('change', function () {
     if (adminFileInput.files.length) runScan(adminFileInput.files[0]);
   });
 
   function runScan(file) {
     var isPdf = file.type === 'application/pdf';
-
-    if (isPdf || !window.OcrScan) {
-      /* PDF or no OCR — go straight to form; admin fills manually */
-      showScanForm(file, null, isPdf);
-      return;
-    }
+    if (isPdf || !window.OcrScan) { showScanForm(file, null, isPdf); return; }
     adminScanStatus.classList.remove('hidden');
     adminScanMsg.textContent = 'Scanning paper…';
-
     OcrScan.scanImages([file], function () {}).then(function (results) {
-      var r = results[0];
-      showScanForm(file, r.info, false);
-    }).catch(function () {
-      showScanForm(file, null, false);
-    });
+      showScanForm(file, results[0].info, false);
+    }).catch(function () { showScanForm(file, null, false); });
   }
 
   function showScanForm(file, info, isPdf) {
-    adminScanStatus.classList.add('hidden');
-    scanStep.classList.add('hidden');
-    addPaperForm.classList.remove('hidden');
-
+    if (adminScanStatus) adminScanStatus.classList.add('hidden');
+    if (scanStep)        scanStep.classList.add('hidden');
+    if (addPaperForm)    addPaperForm.classList.remove('hidden');
     info = info || {};
-
-    /* Preview: PDF icon or image thumbnail */
-    var previewHtml;
-    if (isPdf) {
-      previewHtml = '<div class="detected-thumb scan-item-pdf" style="width:80px;height:80px;font-size:.85rem">PDF</div>';
-    } else {
-      var thumbUrl = URL.createObjectURL(file);
-      previewHtml  = '<img class="detected-thumb" src="' + escHtml(thumbUrl) + '" />';
-    }
-
+    var previewHtml = isPdf
+      ? '<div class="detected-thumb scan-item-pdf" style="width:80px;height:80px;font-size:.85rem">PDF</div>'
+      : '<img class="detected-thumb" src="' + URL.createObjectURL(file) + '" />';
     var hasInfo = !!(info.courseCode || info.courseName || info.examType || info.year);
-    detectedPreview.innerHTML =
-      '<div class="detected-thumb-row">' +
-        previewHtml +
+    if (detectedPreview) detectedPreview.innerHTML =
+      '<div class="detected-thumb-row">' + previewHtml +
         '<div class="detected-chips">' +
           (isPdf
-            ? '<span class="chip chip-warn">PDF uploaded — fill details below</span>'
-            : (
-                chip(info.courseCode, 'Course Code') +
-                chip(info.courseName, 'Subject') +
-                chip(info.examType,   'Exam') +
-                chip(info.year ? String(info.year) : null, 'Year') +
-                chip(info.slot, 'Slot') +
-                (!hasInfo ? '<span class="chip chip-warn">Could not auto-detect — fill manually</span>' : '')
-              )
+            ? '<span class="chip chip-warn">PDF — fill details below</span>'
+            : (chip(info.courseCode, 'Course Code') + chip(info.courseName, 'Subject') +
+               chip(info.examType, 'Exam') + chip(info.year ? String(info.year) : null, 'Year') +
+               chip(info.slot, 'Slot') +
+               (!hasInfo ? '<span class="chip chip-warn">Could not auto-detect — fill manually</span>' : ''))
           ) +
         '</div>' +
       '</div>';
-
-    /* Pre-fill fields */
     setVal('fCode',    info.courseCode || '');
     setVal('fSubject', info.courseName || '');
-    setVal('fYear',    info.year       || '');
-
-    if (info.examType) {
-      var fExam = document.getElementById('fExam');
-      if (fExam) fExam.value = info.examType;
-    }
-    if (info.semester) {
-      var fSem = document.getElementById('fSem');
-      if (fSem) fSem.value = info.semester;
-    }
-
-    /* Auto-derive course type from code */
-    if (info.courseCode) {
-      var fCourse = document.getElementById('fCourse');
-      if (fCourse) {
-        var code = info.courseCode.toUpperCase();
-        fCourse.value = code;
-      }
-    }
+    setVal('fYear',    info.year || '');
+    if (info.examType) { var fe = document.getElementById('fExam'); if (fe) fe.value = info.examType; }
+    if (info.semester) { var fs = document.getElementById('fSem');  if (fs) fs.value = info.semester; }
+    if (info.courseCode) { var fc = document.getElementById('fCourse'); if (fc) fc.value = info.courseCode.toUpperCase(); }
   }
 
   function chip(val, label) {
@@ -410,102 +357,64 @@
     return '<span class="chip chip-ok"><span class="chip-label">' + escHtml(label) + '</span>' + escHtml(String(val)) + '</span>';
   }
 
-  /* Add paper form submit */
-  addPaperForm && addPaperForm.addEventListener('submit', function (e) {
+  if (addPaperForm) addPaperForm.addEventListener('submit', function (e) {
     e.preventDefault();
-    var subject  = getVal('fSubject');
-    var code     = getVal('fCode').toUpperCase();
-    var course   = getVal('fCourse');
-    var year     = parseInt(getVal('fYear'), 10) || 0;
-    var exam     = getVal('fExam');
-    var semester = getVal('fSem');
-    var url      = getVal('fUrl');
-    var notes    = getVal('fNotes');
-
-    if (!url || (url !== '#' && !/^https?:\/\//i.test(url))) {
-      document.getElementById('fUrl').classList.add('form-input-error');
-      document.getElementById('fUrl').focus();
-      return;
-    }
-
-    window.Papers.addPaper({
-      subject  : subject  || '(untitled)',
-      code     : code     || '?',
-      course   : course   || '?',
-      year     : year     || new Date().getFullYear(),
-      exam     : exam     || '?',
-      semester : semester,
+    var url = getVal('fUrl');
+    if (!url) { var u = document.getElementById('fUrl'); if (u) { u.style.borderColor = '#f87171'; u.focus(); } return; }
+    window.Papers && window.Papers.addPaper({
+      subject  : getVal('fSubject') || '(untitled)',
+      code     : getVal('fCode').toUpperCase() || '?',
+      course   : getVal('fCourse') || '?',
+      year     : parseInt(getVal('fYear'), 10) || new Date().getFullYear(),
+      exam     : getVal('fExam') || '?',
+      semester : getVal('fSem'),
       url      : url,
-      notes    : notes,
+      notes    : getVal('fNotes'),
       source   : 'admin'
     });
-
     closeAddModal();
     renderTable();
     updateStats();
   });
 
-  /* ════════════════════════════════════════════════
-     EDIT MODAL
-  ════════════════════════════════════════════════ */
-
-  editModalClose && editModalClose.addEventListener('click', closeEditModal);
-  editCancelBtn  && editCancelBtn.addEventListener('click',  closeEditModal);
-  editModal      && editModal.addEventListener('click', function (e) {
+  /* ── Edit Modal functions ── */
+  if (editModalClose) editModalClose.addEventListener('click', closeEditModal);
+  if (editCancelBtn)  editCancelBtn.addEventListener('click',  closeEditModal);
+  if (editModal) editModal.addEventListener('click', function (e) {
     if (e.target === editModal) closeEditModal();
   });
 
   function openEditModal(id) {
-    var all    = window.Papers ? window.Papers.getPapers() : [];
-    var paper  = all.find(function (p) { return p.id === id; });
-    if (!paper) return;
-
-    document.getElementById('ePaperId').value  = paper.id;
-    document.getElementById('eSubject').value  = paper.subject || '';
-    document.getElementById('eCode').value     = paper.code    || '';
-    document.getElementById('eYear').value     = paper.year    || '';
-    document.getElementById('eUrl').value      = (paper.url !== '#' ? paper.url : '') || '';
-
-    var eExam = document.getElementById('eExam');
-    if (eExam) eExam.value = paper.exam || '';
-
+    var paper = (window.Papers ? window.Papers.getPapers() : []).find(function (p) { return p.id === id; });
+    if (!paper || !editModal) return;
+    setVal('ePaperId', paper.id);
+    setVal('eSubject', paper.subject || '');
+    setVal('eCode',    paper.code    || '');
+    setVal('eYear',    paper.year    || '');
+    setVal('eUrl',     paper.url !== '#' ? (paper.url || '') : '');
+    var ee = document.getElementById('eExam'); if (ee) ee.value = paper.exam || '';
     editModal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
-    setTimeout(function () {
-      editModal.querySelector('.modal-glass').classList.add('modal-open');
-    }, 10);
+    setTimeout(function () { editModal.querySelector('.modal-glass').classList.add('modal-open'); }, 10);
   }
 
   function closeEditModal() {
+    if (!editModal) return;
     editModal.querySelector('.modal-glass').classList.remove('modal-open');
-    setTimeout(function () {
-      editModal.classList.add('hidden');
-      document.body.style.overflow = '';
-      if (editPaperForm) editPaperForm.reset();
-    }, 250);
+    setTimeout(function () { editModal.classList.add('hidden'); document.body.style.overflow = ''; }, 250);
   }
 
-  editPaperForm && editPaperForm.addEventListener('submit', function (e) {
+  if (editPaperForm) editPaperForm.addEventListener('submit', function (e) {
     e.preventDefault();
-    var id      = parseInt(document.getElementById('ePaperId').value, 10);
-    var subject = document.getElementById('eSubject').value.trim();
-    var code    = document.getElementById('eCode').value.trim().toUpperCase();
-    var year    = parseInt(document.getElementById('eYear').value, 10) || 0;
-    var exam    = document.getElementById('eExam').value;
-    var url     = document.getElementById('eUrl').value.trim();
-
-    if (!subject || !code) return;
-    if (url && url !== '#' && !/^https?:\/\//i.test(url)) return;
-
-    window.Papers.updatePaper(id, {
-      subject : subject,
-      code    : code,
-      year    : year || undefined,
-      exam    : exam || undefined,
-      url     : url || '#',
+    var id = parseInt(getVal('ePaperId'), 10);
+    window.Papers && window.Papers.updatePaper(id, {
+      subject : getVal('eSubject') || undefined,
+      code    : getVal('eCode').toUpperCase() || undefined,
+      year    : parseInt(getVal('eYear'), 10) || undefined,
+      exam    : getVal('eExam') || undefined,
+      url     : getVal('eUrl') || '#',
       source  : 'admin'
     });
-
     closeEditModal();
     renderTable();
     updateStats();
@@ -777,8 +686,7 @@
       window.DB.approveSubmission(id, sub).then(function (newId) {
         approvedPaper.id = newId;
         _afterApprove(approvedPaper);
-      }).catch(function (e) {
-        console.warn('DB approveSubmission failed:', e);
+      }).catch(function () {
         _afterApprove(approvedPaper);
       });
     } else {
@@ -799,7 +707,7 @@
   function rejectPending(id) {
     if (!confirm('Reject and delete this submission?')) return;
     if (window.DB && window.DB.configured()) {
-      window.DB.rejectPending(id).catch(function (e) { console.warn('DB reject:', e); });
+      window.DB.rejectPending(id).catch(function () {});
     }
     var list = loadPending();
     savePending(list.filter(function (s) { return s.id !== id; }));

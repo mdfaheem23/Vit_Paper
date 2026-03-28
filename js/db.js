@@ -95,7 +95,7 @@
     return SB_URL + '/storage/v1/object/public/' + BUCKET + '/' + path;
   }
 
-  /* ─── Row normaliser ───────────────────────── */
+  /* ─── Row normalize ───────────────────────── */
   function rowToSub(r) {
     return {
       id          : r.id,
@@ -127,7 +127,7 @@
       var file   = files[i];
       var meta   = (sub.images || [])[i] || {};
       var pubUrl = null;
-      try { pubUrl = await uploadImage(sub.id, i, file); } catch (e) { console.warn('Upload img ' + i, e); }
+      try { pubUrl = await uploadImage(sub.id, i, file); } catch (e) { /* skip images that fail to upload */ }
       imageData.push({
         name    : file.name,
         isPdf   : file.type === 'application/pdf',
@@ -163,7 +163,6 @@
         '?select=*&status=eq.pending&order=submitted_at.desc');
       return rows.map(rowToSub);
     } catch (e) {
-      console.warn('DB.loadPending fallback:', e);
       return lsLoadPending();
     }
   }
@@ -230,7 +229,6 @@
         };
       });
     } catch (e) {
-      console.warn('loadApprovedPapers:', e);
       return [];
     }
   }

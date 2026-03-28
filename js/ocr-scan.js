@@ -133,9 +133,9 @@
         courseName = nameMatch[1].trim().substring(0, 60);
       } else {
         /* All-caps line fallback */
-        var lines = text.split('\n');
-        for (var li = 0; li < lines.length; li++) {
-          var l = lines[li].trim();
+        var allLines = text.split('\n');
+        for (var li = 0; li < allLines.length; li++) {
+          var l = allLines[li].trim();
           if (l.length >= 10 && l.length <= 70 && /^[A-Z\s&,\-]+$/.test(l) && !/^\d+$/.test(l)) {
             courseName = l;
             break;
