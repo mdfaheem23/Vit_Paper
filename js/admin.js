@@ -202,21 +202,34 @@
         var rawId = btn.dataset.del;
         if (!confirm('Delete this paper? This cannot be undone.')) return;
 
-        /* Remove from vit_qp_extra (numeric IDs) */
-        var numId = parseInt(rawId, 10);
-        if (!isNaN(numId)) window.Papers.deletePaper(numId);
+        /* Find the paper so we can match duplicates across both stores */
+        var allPapers = window.Papers ? window.Papers.getPapers() : [];
+        var target = allPapers.find(function (p) { return String(p.id) === rawId; });
 
-        /* Remove from vit_approved_cache (UUID IDs) */
+        function matchesPaper(p) {
+          if (String(p.id) === rawId) return true;
+          return target &&
+            p.subject === target.subject && p.code === target.code &&
+            p.exam === target.exam && String(p.year) === String(target.year);
+        }
+
+        /* Remove all matching from vit_qp_extra */
+        try {
+          var extra = JSON.parse(localStorage.getItem('vit_qp_extra') || '[]');
+          localStorage.setItem('vit_qp_extra', JSON.stringify(extra.filter(function (p) { return !matchesPaper(p); })));
+        } catch (e) {}
+
+        /* Remove all matching from vit_approved_cache + Supabase */
         if (window.Papers && window.Papers.saveApprovedCache) {
           try {
-            var cached = JSON.parse(localStorage.getItem('vit_approved_cache') || '[]');
-            var after  = cached.filter(function (p) { return String(p.id) !== rawId; });
-            if (after.length !== cached.length) {
-              window.Papers.saveApprovedCache(after);
-              /* Also remove from Supabase */
-              if (window.DB && window.DB.configured()) {
-                window.DB.deleteApprovedPaper(rawId).catch(function (e) { console.warn('DB delete approved:', e); });
-              }
+            var cached   = JSON.parse(localStorage.getItem('vit_approved_cache') || '[]');
+            var toRemove = cached.filter(function (p) { return matchesPaper(p); });
+            var after    = cached.filter(function (p) { return !matchesPaper(p); });
+            window.Papers.saveApprovedCache(after);
+            if (window.DB && window.DB.configured()) {
+              toRemove.forEach(function (p) {
+                window.DB.deleteApprovedPaper(String(p.id)).catch(function (e) { console.warn('DB delete:', e); });
+              });
             }
           } catch (e) {}
         }
