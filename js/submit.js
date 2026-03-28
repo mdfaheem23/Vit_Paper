@@ -89,21 +89,89 @@
   function handleFiles(files) {
     var accepted = files.filter(function (f) {
       return f.type.startsWith('image/') || f.type === 'application/pdf';
-    }).slice(0, 10);
+    });
 
     if (!accepted.length) return;
-    selectedFiles = accepted;
 
-    showUploadReady();
+    /* Append to existing selection, cap at 10 total */
+    selectedFiles = selectedFiles.concat(accepted).slice(0, 10);
+
+    renderPreview();
   }
 
-  /* ─── Show upload ready state ─────────────── */
-  function showUploadReady() {
-    if (!scanOverall) return;
-    var n = selectedFiles.length;
-    scanOverall.className = 'scan-overall ok';
-    scanOverall.textContent = '✓ ' + n + ' file' + (n === 1 ? '' : 's') + ' ready to submit.';
-    scanOverall.classList.remove('hidden');
+  /* ─── Remove a file ──────────────────────── */
+  function removeFile(idx) {
+    /* Revoke object URL to free memory */
+    var prev = document.getElementById('filePreview');
+    var img = prev && prev.querySelector('[data-idx="' + idx + '"] img');
+    if (img && img.src.startsWith('blob:')) URL.revokeObjectURL(img.src);
+
+    selectedFiles.splice(idx, 1);
+    renderPreview();
+  }
+
+  /* ─── Render file previews ───────────────── */
+  function renderPreview() {
+    var grid = document.getElementById('filePreview');
+    if (!grid) return;
+
+    if (!selectedFiles.length) {
+      grid.style.display = 'none';
+      grid.innerHTML = '';
+      if (scanOverall) scanOverall.classList.add('hidden');
+      if (submitBtn) submitBtn.disabled = true;
+      return;
+    }
+
+    grid.style.display = 'flex';
+    grid.style.flexWrap = 'wrap';
+    grid.style.gap = '.65rem';
+    grid.style.marginTop = '.75rem';
+    grid.innerHTML = '';
+
+    selectedFiles.forEach(function (file, i) {
+      var item = document.createElement('div');
+      item.dataset.idx = i;
+      item.style.cssText = 'position:relative;width:90px;flex-shrink:0';
+
+      var isPdf = file.type === 'application/pdf';
+      var thumb;
+
+      if (isPdf) {
+        thumb = document.createElement('div');
+        thumb.style.cssText = 'width:90px;height:110px;background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.3);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem;font-size:.6rem;color:#a78bfa;text-align:center;padding:.4rem;box-sizing:border-box;word-break:break-all';
+        thumb.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
+          '<span>' + escHtml(file.name.length > 14 ? file.name.substring(0, 12) + '…' : file.name) + '</span>';
+      } else {
+        thumb = document.createElement('img');
+        thumb.src = URL.createObjectURL(file);
+        thumb.alt = file.name;
+        thumb.style.cssText = 'width:90px;height:110px;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,.1);display:block';
+      }
+
+      var delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.textContent = '×';
+      delBtn.style.cssText = 'position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#ef4444;border:none;color:#fff;font-size:.85rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;font-weight:700';
+      delBtn.addEventListener('click', function () { removeFile(i); });
+
+      var name = document.createElement('div');
+      name.style.cssText = 'font-size:.58rem;color:var(--text-muted);margin-top:.3rem;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:90px';
+      name.textContent = file.name.length > 14 ? file.name.substring(0, 12) + '…' : file.name;
+
+      item.appendChild(thumb);
+      item.appendChild(delBtn);
+      item.appendChild(name);
+      grid.appendChild(item);
+    });
+
+    /* Status bar */
+    if (scanOverall) {
+      var n = selectedFiles.length;
+      scanOverall.className = 'scan-overall ok';
+      scanOverall.textContent = '✓ ' + n + ' file' + (n === 1 ? '' : 's') + ' ready to submit.';
+      scanOverall.classList.remove('hidden');
+    }
     if (submitBtn) submitBtn.disabled = false;
   }
 
