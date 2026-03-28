@@ -18,46 +18,21 @@
     if (!preloader) return Promise.resolve();
 
     return new Promise(function (resolve) {
-      var start    = performance.now();
+      var start = performance.now();
+      /* First visit: full 2s animation. Repeat visit: 300ms fast-skip. */
       var visited  = sessionStorage.getItem('vit_visited');
-      var duration = visited ? 400 : 2000;
+      var duration = visited ? 300 : 2000;
       sessionStorage.setItem('vit_visited', '1');
 
-      /* ── Logo morph: VITMQP → VIT MID MIC Papers ── */
-      var plVITM     = document.getElementById('plVITM');
-      var plQP       = document.getElementById('plQP');
-      var plExpanded = document.getElementById('plExpanded');
-
-      if (!visited && typeof gsap !== 'undefined' && plVITM && plQP && plExpanded) {
-        gsap.timeline({ delay: 0.3 })
-          /* Step 1: QP fades out */
-          .to(plQP, { opacity: 0, x: 12, duration: 0.35, ease: 'power2.in' }, 0.5)
-          /* Step 2: VITMQP shrinks slightly */
-          .to(plVITM, { opacity: 0, x: -12, duration: 0.35, ease: 'power2.in' }, 0.6)
-          /* Step 3: expanded text fades+slides in */
-          .fromTo(plExpanded,
-            { opacity: 0, y: 14, scale: 0.92 },
-            { opacity: 1, y: 0,  scale: 1, duration: 0.55, ease: 'back.out(1.4)' },
-            0.85
-          )
-          /* Step 4: pause, then fade expanded back out */
-          .to(plExpanded, { opacity: 0, y: -10, duration: 0.3, ease: 'power2.in' }, 1.75)
-          /* Step 5: VITMQP returns */
-          .fromTo([plVITM, plQP],
-            { opacity: 0, x: 0 },
-            { opacity: 1, x: 0, duration: 0.4, ease: 'power2.out', stagger: 0.06 },
-            1.9
-          );
-      }
-
       function tick(now) {
-        var p     = Math.min((now - start) / duration, 1);
+        var p = Math.min((now - start) / duration, 1);
         var eased = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
-        var val   = Math.round(eased * 100);
+        var val = Math.round(eased * 100);
         if (fill) fill.style.width = val + '%';
         if (pct)  pct.textContent  = val;
         if (p < 1) { requestAnimationFrame(tick); return; }
 
+        // Exit
         var done = false;
         function hidePreloader() {
           if (done) return;
@@ -65,11 +40,15 @@
           preloader.style.display = 'none';
           resolve();
         }
+        // Fallback: force hide after 1s in case GSAP fails
         setTimeout(hidePreloader, 1000);
         if (typeof gsap !== 'undefined') {
           gsap.to(preloader, {
-            opacity: 0, scale: 1.04, duration: 0.7,
-            ease: 'power2.inOut', onComplete: hidePreloader
+            opacity: 0,
+            scale: 1.04,
+            duration: 0.7,
+            ease: 'power2.inOut',
+            onComplete: hidePreloader
           });
         } else {
           hidePreloader();

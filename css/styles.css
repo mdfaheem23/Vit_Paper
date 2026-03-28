@@ -1019,7 +1019,6 @@ footer p {
 }
 .preloader-inner { text-align: center; }
 .preloader-count { font-family: var(--font-mono); font-size: .75rem; color: var(--text-muted); }
-#preloaderLogo { position: relative; display: inline-block; min-width: 14rem; height: 2.5rem; line-height: 2.5rem; }
 
 /* ── Navbar (class-based) ── */
 .navbar {
