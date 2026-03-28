@@ -68,45 +68,81 @@
       nav.classList.toggle('scrolled', window.scrollY > 40);
     }, { passive: true });
 
-    /* ── Playful logo letter animation ── */
-    var logo = nav.querySelector('.nav-logo');
-    if (!logo || typeof gsap === 'undefined') return;
+    if (typeof gsap === 'undefined') return;
 
-    /* Split into individual letter spans */
-    var text = logo.textContent;
-    logo.innerHTML = text.split('').map(function (ch) {
-      return '<span class="logo-letter" style="display:inline-block">' + ch + '</span>';
-    }).join('');
-    var letters = logo.querySelectorAll('.logo-letter');
+    /* ── Elements ── */
+    var logo      = document.getElementById('navLogo');
+    var logoM     = document.getElementById('logoM');
+    var expand    = document.getElementById('logoExpand');
+    var logoQP    = document.getElementById('logoQP');
+    if (!logo || !logoM || !expand || !logoQP) return;
 
-    /* Entrance: letters drop in with elastic stagger */
-    gsap.from(letters, {
-      y: -28,
-      opacity: 0,
-      rotation: function (i) { return (i % 2 === 0 ? -18 : 18); },
-      duration: 0.6,
-      ease: 'elastic.out(1, 0.5)',
+    /* Measure full width of expand text before animating */
+    gsap.set(expand, { width: 'auto', opacity: 0 });
+    var expandedW = expand.offsetWidth;
+    gsap.set(expand, { width: 0, opacity: 1 });
+
+    /* ── Static parts to bounce on entrance ── */
+    var parts = [].slice.call(logo.querySelectorAll('#logoM, #logoQP'));
+    var vitLetters = 'VIT'.split('').map(function (ch) {
+      var s = document.createElement('span');
+      s.style.display = 'inline-block';
+      s.textContent   = ch;
+      return s;
+    });
+    /* Wrap VIT text node in individual spans */
+    var vitNode = logo.firstChild;
+    if (vitNode && vitNode.nodeType === 3) {
+      var frag = document.createDocumentFragment();
+      vitLetters.forEach(function (s) { frag.appendChild(s); });
+      logo.replaceChild(frag, vitNode);
+    }
+
+    var allParts = vitLetters.concat([logoM, logoQP]);
+
+    /* Entrance: letters stagger in */
+    gsap.from(allParts, {
+      y: -22, opacity: 0,
+      rotation: function (i) { return i % 2 === 0 ? -15 : 15; },
+      duration: 0.55,
+      ease: 'elastic.out(1, 0.55)',
       stagger: 0.07,
-      delay: 0.1
+      delay: 0.15,
+      onComplete: function () {
+        /* After entrance, expand M → MID MIC playfully */
+        var tl = gsap.timeline();
+        tl
+          /* M squishes slightly */
+          .to(logoM, { scaleX: 0.6, scaleY: 1.3, duration: 0.18, ease: 'power2.in' })
+          /* Expand text slides out while M snaps back */
+          .to(expand, { width: expandedW, duration: 0.55, ease: 'elastic.out(1, 0.6)' }, '-=0.05')
+          .to(logoM, { scaleX: 1, scaleY: 1, duration: 0.35, ease: 'back.out(2)' }, '-=0.45')
+          /* QP bounces right to make room feel natural */
+          .to(logoQP, { x: 3, duration: 0.25, ease: 'back.out(3)' }, '-=0.4')
+          /* Hold expanded for 1.4s */
+          .to({}, { duration: 1.4 })
+          /* Collapse back */
+          .to(expand, { width: 0, duration: 0.38, ease: 'power3.in' })
+          .to(logoM, { scaleX: 1.25, scaleY: 0.85, duration: 0.12, ease: 'power2.in' }, '-=0.2')
+          .to(logoM, { scaleX: 1, scaleY: 1, duration: 0.4, ease: 'elastic.out(1, 0.5)' })
+          .to(logoQP, { x: 0, duration: 0.3, ease: 'back.out(2)' }, '-=0.35');
+      }
     });
 
-    /* Hover: each letter bounces up with wave stagger */
+    /* ── Hover wave ── */
     logo.addEventListener('mouseenter', function () {
-      gsap.to(letters, {
-        y: -7,
-        scale: 1.2,
-        rotation: function (i) { return (i % 2 === 0 ? -10 : 10); },
-        duration: 0.35,
-        ease: 'back.out(2)',
+      gsap.to(allParts, {
+        y: -7, scale: 1.15,
+        rotation: function (i) { return i % 2 === 0 ? -9 : 9; },
+        duration: 0.32,
+        ease: 'back.out(2.5)',
         stagger: 0.05
       });
     });
     logo.addEventListener('mouseleave', function () {
-      gsap.to(letters, {
-        y: 0,
-        scale: 1,
-        rotation: 0,
-        duration: 0.55,
+      gsap.to(allParts, {
+        y: 0, scale: 1, rotation: 0,
+        duration: 0.5,
         ease: 'elastic.out(1, 0.4)',
         stagger: 0.04
       });
