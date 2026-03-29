@@ -443,20 +443,20 @@
       ThreeScene.init('hero-canvas');
       initNavbar();
       animateHero();
-      initStats();
-      renderCards(Papers.getPapers());
-      initFilters();
       initScrollAnimations();
 
-      /* Fetch latest approved papers from Supabase and re-render */
+      /* Fetch from Supabase first; fall back to cache if unavailable — renders only once */
+      var doRender = function (fresh) {
+        if (fresh && fresh.length) Papers.saveApprovedCache(fresh);
+        initStats();
+        renderCards(Papers.getPapers());
+        initFilters();
+      };
+
       if (window.DB && window.DB.loadApprovedPapers) {
-        window.DB.loadApprovedPapers().then(function (fresh) {
-          if (fresh && fresh.length) {
-            Papers.saveApprovedCache(fresh);
-            renderCards(Papers.getPapers());
-            applyFilters();
-          }
-        }).catch(function () {});
+        window.DB.loadApprovedPapers().then(doRender).catch(function () { doRender(null); });
+      } else {
+        doRender(null);
       }
     });
   }
