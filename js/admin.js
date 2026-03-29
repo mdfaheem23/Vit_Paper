@@ -461,10 +461,11 @@
         source  : 'admin'
       };
       window.Papers && window.Papers.updatePaper(paper.id, updates);
-      /* Also PATCH Supabase so all users see the change */
+      /* DELETE + INSERT to Supabase so all users see the change */
       if (window.DB && window.DB.configured()) {
-        window.DB.patchApprovedPaper(paper.id, updates).catch(function (e) {
-          console.warn('Supabase PATCH failed:', e);
+        var merged = Object.assign({}, paper, updates);
+        window.DB.patchApprovedPaper(paper.id, merged).catch(function (e) {
+          console.warn('Supabase update failed:', e);
         });
       }
     }

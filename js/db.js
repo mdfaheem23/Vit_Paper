@@ -197,20 +197,25 @@
     return newId;
   }
 
-  /* Patch fields on an approved paper in Supabase */
+  /* Patch fields on an approved paper — uses DELETE + INSERT since PATCH is blocked by RLS */
   async function patchApprovedPaper(id, data) {
     if (!configured()) return;
-    var body = {};
-    if (data.subject  !== undefined) body.subject  = data.subject;
-    if (data.code     !== undefined) body.code      = data.code;
-    if (data.course   !== undefined) body.course    = data.course;
-    if (data.year     !== undefined) body.year      = data.year;
-    if (data.exam     !== undefined) body.exam      = data.exam;
-    if (data.url      !== undefined) body.url       = data.url;
-    if (data.slot     !== undefined) body.slot      = data.slot;
-    if (data.semester !== undefined) body.semester  = data.semester;
-    if (!Object.keys(body).length) return;
-    await sbPatch('/rest/v1/' + TABLE + '?id=eq.' + encodeURIComponent(id), body);
+    await sbDelete('/rest/v1/' + TABLE + '?id=eq.' + encodeURIComponent(id));
+    await sbPost('/rest/v1/' + TABLE, {
+      id          : id,
+      subject     : data.subject     || null,
+      code        : data.code        || null,
+      course      : data.course      || null,
+      year        : data.year        || null,
+      exam        : data.exam        || null,
+      semester    : data.semester    || null,
+      slot        : data.slot        || null,
+      url         : data.url         || null,
+      images      : data.images      || [],
+      notes       : data.notes       || null,
+      submitted_at: data.submittedAt || new Date().toISOString(),
+      status      : 'approved'
+    });
   }
 
   /* Delete an approved paper from Supabase */
