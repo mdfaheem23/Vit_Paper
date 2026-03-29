@@ -8,6 +8,13 @@
   /* ── State ────────────────────────────── */
   var activeFilters = { course: 'all', year: 'all', exam: 'all', search: '' };
 
+  /* Convert single year "2025" → "2025-2026"; pass-through "2025-2026" unchanged */
+  function fmtYear(y) {
+    var s = String(y || '');
+    if (/^\d{4}$/.test(s)) return s + '-' + (parseInt(s, 10) + 1);
+    return s;
+  }
+
   /* ════════════════════════════════════════
      PRELOADER
   ═══════════════════════════════════════ */
@@ -258,12 +265,12 @@
       var card = document.createElement('div');
       card.className = 'paper-card ' + (isMic ? 'mic' : 'mid');
       card.dataset.course = p.course;
-      card.dataset.year   = p.year;
+      card.dataset.year   = fmtYear(p.year);
       card.dataset.exam   = p.exam;
       card.innerHTML = [
         '<div class="card-header">',
           '<span class="card-course">' + escHtml(p.course) + '</span>',
-          '<span class="card-year">' + p.year + '</span>',
+          '<span class="card-year">' + fmtYear(p.year) + '</span>',
         '</div>',
         '<div class="card-subject">' + escHtml(p.subject) + '</div>',
         '<div class="card-code">' + escHtml(p.code) + '</div>',
@@ -368,7 +375,7 @@
     var filtered = all.filter(function (p) {
       var ok = true;
       if (activeFilters.course !== 'all') ok = ok && p.course === activeFilters.course;
-      if (activeFilters.year   !== 'all') ok = ok && String(p.year) === activeFilters.year;
+      if (activeFilters.year   !== 'all') ok = ok && fmtYear(p.year) === activeFilters.year;
       if (activeFilters.exam   !== 'all') ok = ok && p.exam === activeFilters.exam;
       if (activeFilters.search) ok = ok && (
         p.subject.toLowerCase().includes(activeFilters.search) ||
