@@ -452,7 +452,7 @@
         subject : getVal('eSubject') || undefined,
         code    : getVal('eCode').toUpperCase() || undefined,
         course  : getVal('eCourse') || undefined,
-        year    : parseInt(getVal('eYear'), 10) || undefined,
+        year    : getVal('eYear') || undefined,
         exam    : getVal('eExam') || undefined,
         slot    : getVal('eSlot').toUpperCase() || undefined,
         url     : getVal('eUrl') || '#',
