@@ -426,7 +426,9 @@
     setVal('ePaperId', paper.id);
     setVal('eSubject', paper.subject || '');
     setVal('eCode',    paper.code    || '');
-    setVal('eYear',    paper.year    || '');
+    var rawYear = String(paper.year || '');
+    var normYear = /^\d{4}$/.test(rawYear) ? rawYear + '-' + (parseInt(rawYear, 10) + 1) : rawYear;
+    setVal('eYear', normYear);
     setVal('eUrl',  paper.url !== '#' ? (paper.url || '') : '');
     setVal('eSlot', paper.slot || '');
     var ec = document.getElementById('eCourse'); if (ec) ec.value = paper.course || '';
