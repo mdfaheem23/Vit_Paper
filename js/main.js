@@ -447,6 +447,17 @@
       renderCards(Papers.getPapers());
       initFilters();
       initScrollAnimations();
+
+      /* Fetch latest approved papers from Supabase and re-render */
+      if (window.DB && window.DB.loadApprovedPapers) {
+        window.DB.loadApprovedPapers().then(function (fresh) {
+          if (fresh && fresh.length) {
+            Papers.saveApprovedCache(fresh);
+            renderCards(Papers.getPapers());
+            applyFilters();
+          }
+        }).catch(function () {});
+      }
     });
   }
 
